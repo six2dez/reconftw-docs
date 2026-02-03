@@ -1,7 +1,5 @@
 # reconFTW Documentation
 
-> **Documentation for reconFTW `dev` branch**  
-> Last updated: February 2026
 
 <p align="center">
   <img src="https://github.com/six2dez/reconftw/blob/main/images/banner.png" alt="reconFTW Banner">
@@ -197,7 +195,3 @@ reconFTW is open source and welcomes contributions! See our [Contributing Guide]
 </p>
 
 ---
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026  
-> Found an issue? [Report it on GitHub](https://github.com/six2dez/reconftw/issues)
