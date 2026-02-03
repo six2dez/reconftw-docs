@@ -1,0 +1,665 @@
+# Advanced Usage
+
+This guide covers advanced features, customization, and optimization techniques for power users.
+
+---
+
+## Custom Function Execution
+
+### Running Specific Functions
+
+Use the `-c` flag to run specific functions:
+
+```bash
+# Run single function
+./reconftw.sh -d example.com -c nuclei_check
+
+# Run multiple functions
+./reconftw.sh -d example.com -c sub_passive
+./reconftw.sh -d example.com -c webprobe_simple
+./reconftw.sh -d example.com -c nuclei_check
+```
+
+### Available Functions
+
+| Module | Functions |
+|--------|-----------|
+| OSINT | `google_dorks`, `github_dorks`, `metadata`, `emails`, `domain_info` |
+| Subdomains | `sub_passive`, `sub_crt`, `sub_brute`, `sub_permut`, `sub_dns` |
+| Web | `webprobe_simple`, `screenshot`, `fuzz`, `urlchecks`, `jschecks` |
+| Vulns | `nuclei_check`, `xss`, `sqli`, `ssrf_checks`, `cors` |
+| Hosts | `portscan`, `cdnprovider`, `waf_checks`, `geo_info` |
+
+### Function Dependencies
+
+Some functions depend on others:
+
+```
+webprobe_simple → screenshot → urlchecks → jschecks
+sub_passive → sub_dns → webprobe_simple
+```
+
+---
+
+## Creating Custom Modules
+
+### Module Structure
+
+```bash
+# Create custom module: modules/custom.sh
+#!/bin/bash
+
+custom_function() {
+    start_func "${FUNCNAME[0]}" "Running custom check"
+    
+    # Your code here
+    echo "Custom scan for $domain"
+    
+    # Use existing outputs
+    if [[ -f "$dir/webs/webs.txt" ]]; then
+        cat "$dir/webs/webs.txt" | custom-tool > "$dir/custom/results.txt"
+    fi
+    
+    end_func "Results: $dir/custom/results.txt"
+}
+```
+
+### Loading Custom Modules
+
+Add to reconftw.sh:
+
+```bash
+# Load custom module
+source "$SCRIPTPATH/modules/custom.sh"
+```
+
+### Function Templates
+
+```bash
+# Template with all features
+my_function() {
+    # Function lifecycle
+    start_func "${FUNCNAME[0]}" "Description"
+    
+    # Check if should run in DEEP mode
+    if should_run_deep "$input_file" "$DEEP_LIMIT"; then
+        # DEEP mode behavior
+    fi
+    
+    # Use axiom if enabled
+    if [[ "$AXIOM" == true ]]; then
+        axiom_scan "$input_file" "my-tool" "$output_file"
+    else
+        my-tool < "$input_file" > "$output_file"
+    fi
+    
+    # Notifications
+    notification "Found $(wc -l < $output_file) results"
+    
+    # End function
+    end_func "Completed: $(wc -l < $output_file) results"
+}
+```
+
+---
+
+## Plugin System
+
+### Plugin Architecture
+
+reconFTW supports plugins via hooks:
+
+```bash
+# In reconftw.cfg
+PLUGINS=true
+PLUGINS_PATH="$SCRIPTPATH/plugins"
+```
+
+### Creating Plugins
+
+```bash
+# plugins/my-plugin.sh
+#!/bin/bash
+
+# Hook: after_subdomains
+plugin_after_subdomains() {
+    echo "[PLUGIN] Processing subdomains..."
+    # Custom post-processing
+}
+
+# Hook: after_scan
+plugin_after_scan() {
+    echo "[PLUGIN] Scan completed, generating custom report..."
+    # Custom reporting
+}
+
+# Register plugin
+plugins_register "my-plugin" "after_subdomains,after_scan"
+```
+
+### Available Hooks
+
+| Hook | Timing |
+|------|--------|
+| `before_scan` | Before scan starts |
+| `after_subdomains` | After subdomain enumeration |
+| `after_webprobe` | After web probing |
+| `after_vulns` | After vulnerability scanning |
+| `after_scan` | After scan completes |
+
+---
+
+## Wordlist Customization
+
+### Custom Wordlist Configuration
+
+```bash
+# In reconftw.cfg
+
+# Custom subdomain wordlists
+subs_wordlist="$SCRIPTPATH/wordlists/custom_subdomains.txt"
+subs_wordlist_big="$SCRIPTPATH/wordlists/custom_subdomains_big.txt"
+
+# Custom directory wordlists
+fuzz_wordlist="$SCRIPTPATH/wordlists/custom_dirs.txt"
+
+# Optional vuln-specific wordlists
+lfi_wordlist="$SCRIPTPATH/wordlists/custom_lfi.txt"
+ssti_wordlist="$SCRIPTPATH/wordlists/custom_ssti.txt"
+```
+
+### Generating Custom Wordlists
+
+```bash
+# Generate target-specific wordlist
+./reconftw.sh -d example.com -c wordlist_gen
+
+# Merge wordlists
+cat wordlist1.txt wordlist2.txt | sort -u > merged.txt
+
+# Filter by length
+awk 'length($0) >= 3 && length($0) <= 20' wordlist.txt > filtered.txt
+```
+
+### Per-Target Wordlists
+
+```bash
+# Create target-specific wordlist directory
+mkdir -p wordlists/example.com/
+
+# Place custom wordlists
+cp custom_subs.txt wordlists/example.com/subdomains.txt
+cp custom_dirs.txt wordlists/example.com/fuzzing.txt
+
+# reconFTW will use if present
+```
+
+---
+
+## Resolver Optimization
+
+### Resolver Setup
+
+```bash
+# Validate resolvers
+dnsvalidator -tL public_resolvers.txt -threads 100 -o resolvers.txt
+
+# Use validated resolvers
+RESOLVERS="$SCRIPTPATH/resolvers.txt"
+```
+
+### Trusted Resolvers
+
+```bash
+# Trusted resolvers (for sensitive queries)
+RESOLVERS_TRUSTED="$SCRIPTPATH/resolvers_trusted.txt"
+
+# Contents: reliable, trusted DNS servers
+8.8.8.8
+8.8.4.4
+1.1.1.1
+9.9.9.9
+```
+
+### Resolver Rotation
+
+```bash
+# Enable resolver rotation
+RESOLVER_ROTATE=true
+RESOLVER_ROTATE_INTERVAL=100  # Rotate every 100 queries
+```
+
+---
+
+## Incremental Mode Deep Dive
+
+### How Incremental Works
+
+1. First scan: Full enumeration, results saved
+2. Subsequent scans: Compare new vs existing
+3. Process only NEW findings
+4. Merge results
+
+```bash
+# Enable incremental
+./reconftw.sh -d example.com -r --incremental
+```
+
+### Incremental Data Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Incremental Scan Flow                           │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌──────────────┐     ┌──────────────┐                              │
+│  │  New Scan    │     │ Previous     │                              │
+│  │  Results     │     │ Results      │                              │
+│  └──────┬───────┘     └──────┬───────┘                              │
+│         │                    │                                       │
+│         └────────┬───────────┘                                       │
+│                  │                                                   │
+│                  ▼                                                   │
+│         ┌───────────────┐                                           │
+│         │    Compare    │                                           │
+│         │  (comm/diff)  │                                           │
+│         └───────┬───────┘                                           │
+│                 │                                                    │
+│     ┌───────────┼───────────┐                                       │
+│     ▼           ▼           ▼                                       │
+│ ┌───────┐  ┌────────┐  ┌────────┐                                  │
+│ │  New  │  │ Common │  │Removed │                                  │
+│ │ Items │  │ Items  │  │ Items  │                                  │
+│ └───┬───┘  └────────┘  └────────┘                                  │
+│     │                                                                │
+│     ▼                                                               │
+│ ┌─────────────────┐                                                 │
+│ │ Process ONLY    │                                                 │
+│ │ New Items       │                                                 │
+│ └─────────────────┘                                                 │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Incremental Configuration
+
+```bash
+# In reconftw.cfg
+INCREMENTAL=true
+DIFF_ONLY=true           # Process only differences
+DIFF_NOTIFY=true         # Notify on new findings
+```
+
+---
+
+## Checkpoint/Recovery System
+
+### How Checkpoints Work
+
+```bash
+# Checkpoint directory
+Recon/example.com/.called_fn/
+
+# Each completed function creates a marker
+.called_fn/
+├── sub_passive
+├── sub_crt
+├── webprobe_simple
+└── nuclei_check
+```
+
+### Resuming Interrupted Scans
+
+```bash
+# Scan interrupted at nuclei_check
+./reconftw.sh -d example.com -a
+
+# Resume - skips completed functions
+./reconftw.sh -d example.com -a
+# Output: [sub_passive] Already run, skipping...
+```
+
+### Reset Checkpoints
+
+```bash
+# Reset all checkpoints (full rescan)
+rm -rf Recon/example.com/.called_fn/
+
+# Reset specific function
+rm Recon/example.com/.called_fn/nuclei_check
+```
+
+### Checkpoint Configuration
+
+```bash
+# In reconftw.cfg
+USE_CHECKPOINT=true      # Enable checkpoint system
+CHECKPOINT_DIR=".called_fn"
+```
+
+---
+
+## Rate Limiting Strategies
+
+### Per-Tool Rate Limits
+
+```bash
+# In reconftw.cfg
+
+# httpx rate limit (requests per second)
+HTTPX_RATELIMIT=150
+
+# Nuclei rate limit
+NUCLEI_RATELIMIT=150
+
+# FFUF rate limit
+FFUF_RATELIMIT=0  # 0 = no limit
+```
+
+### Adaptive Rate Limiting
+
+```bash
+# Enable adaptive rate limiting
+./reconftw.sh -d example.com -a --adaptive-rate
+
+# Automatically adjusts based on:
+# - Response times
+# - Error rates
+# - 429 responses
+```
+
+### Global Rate Limit
+
+```bash
+# Limit all requests
+./reconftw.sh -d example.com -r -q 100  # 100 req/sec global
+```
+
+### Target-Specific Limits
+
+```bash
+# Create scope file with rate limits
+echo "example.com:50" > scope.txt  # 50 req/sec for this target
+
+./reconftw.sh -d example.com -r -i scope.txt
+```
+
+---
+
+## Multi-Target Scanning
+
+### Target List
+
+```bash
+# targets.txt
+example.com
+test.com
+target.org
+```
+
+```bash
+# Scan multiple targets
+./reconftw.sh -l targets.txt -r
+```
+
+### Parallel Execution
+
+```bash
+# Run multiple scans in parallel
+cat targets.txt | parallel -j 3 "./reconftw.sh -d {} -r"
+```
+
+### Multi-Target with Different Configs
+
+```bash
+# Create per-target configs
+cp reconftw.cfg configs/example.com.cfg
+cp reconftw.cfg configs/target.org.cfg
+
+# Run with specific config
+./reconftw.sh -d example.com -r -f configs/example.com.cfg
+```
+
+---
+
+## Scope File Management
+
+### Scope File Format
+
+```bash
+# inscope.txt - domains to include
+example.com
+*.example.com
+api.example.org
+
+# outofscope.txt - domains to exclude
+blog.example.com
+legacy.example.com
+```
+
+### Using Scope Files
+
+```bash
+# Include scope
+./reconftw.sh -d example.com -r -i inscope.txt
+
+# Exclude scope
+./reconftw.sh -d example.com -r -x outofscope.txt
+
+# Both
+./reconftw.sh -d example.com -r -i inscope.txt -x outofscope.txt
+```
+
+### Wildcard Scopes
+
+```bash
+# inscope.txt with wildcards
+*.example.com        # All subdomains
+*.*.example.com      # Second-level subdomains
+api.*.example.com    # api.X.example.com pattern
+```
+
+---
+
+## Notification Customization
+
+### Notification Providers
+
+```bash
+# In reconftw.cfg
+NOTIFICATION=true
+
+# Configure in ~/.config/notify/provider-config.yaml
+```
+
+### Provider Configuration
+
+```yaml
+# ~/.config/notify/provider-config.yaml
+slack:
+  - id: "slack-webhook"
+    slack_webhook_url: "https://hooks.slack.com/services/XXX"
+
+discord:
+  - id: "discord-webhook"
+    discord_webhook_url: "https://discord.com/api/webhooks/XXX"
+
+telegram:
+  - id: "telegram"
+    telegram_api_key: "XXX"
+    telegram_chat_id: "XXX"
+```
+
+### Custom Notification Templates
+
+```bash
+# Custom notification format
+notification() {
+    local message="$1"
+    echo "[$(date)] $domain: $message" | notify -silent
+}
+```
+
+---
+
+## AI Report Customization
+
+### AI Configuration
+
+```bash
+# In reconftw.cfg
+AI_REPORT=true
+AI_MODEL="gpt-4"
+AI_REPORT_TYPE="detailed"  # detailed, executive, compliance
+```
+
+### Custom Report Prompts
+
+```bash
+# Custom system prompt
+AI_SYSTEM_PROMPT="You are a senior penetration tester..."
+
+# Custom report sections
+AI_REPORT_SECTIONS="executive_summary,findings,recommendations,methodology"
+```
+
+### Report Types
+
+| Type | Focus | Audience |
+|------|-------|----------|
+| `detailed` | Technical deep-dive | Security team |
+| `executive` | High-level summary | Management |
+| `compliance` | Compliance mapping | Auditors |
+
+---
+
+## Performance Tuning
+
+### Thread Optimization
+
+```bash
+# In reconftw.cfg
+
+# Based on CPU cores (nproc)
+THREADS=$(($(nproc) * 2))
+
+# Per-tool threads
+HTTPX_THREADS=50
+FFUF_THREADS=40
+KATANA_THREADS=20
+DALFOX_THREADS=200
+RESOLVE_DOMAINS_THREADS=150
+TLSX_THREADS=1000
+```
+
+### Memory Management
+
+```bash
+# Limit memory-intensive tools
+FFUF_THREADS=20  # Reduce if OOM
+HTTPX_THREADS=20
+KATANA_THREADS=10
+
+# Use streaming where possible
+# Avoid loading large files into memory
+```
+
+### Disk I/O Optimization
+
+```bash
+# Use SSD for output directory
+OUTPUT="/mnt/ssd/Recon"
+
+# Compress old results
+tar -czf old_results.tar.gz Recon/old_target/
+```
+
+### Network Optimization
+
+```bash
+# Reduce HTTP timeouts
+HTTPX_TIMEOUT=5
+HTTPX_UNCOMMONPORTS_TIMEOUT=5
+
+# Reduce passive enum time window
+SUBFINDER_ENUM_TIMEOUT=120
+```
+
+---
+
+## Circuit Breaker Pattern
+
+### Configuration
+
+```bash
+# In reconftw.cfg
+CIRCUIT_BREAKER=true
+CIRCUIT_BREAKER_THRESHOLD=50    # Error threshold
+CIRCUIT_BREAKER_TIMEOUT=300     # Cooldown in seconds
+```
+
+### Behavior
+
+1. **Closed:** Normal operation
+2. **Open:** Too many errors, stop requests
+3. **Half-Open:** Test with few requests
+4. **Recovery:** Resume normal operation
+
+---
+
+## Environment Variables
+
+### Override Configuration
+
+```bash
+# Set via environment
+export RECONFTW_THREADS=100
+export RECONFTW_OUTPUT="/custom/output"
+
+./reconftw.sh -d example.com -r
+```
+
+### Precedence
+
+1. Command-line flags (highest)
+2. Environment variables
+3. Custom config file (-f)
+4. Default reconftw.cfg (lowest)
+
+---
+
+## Debugging
+
+### Dry Run Mode
+
+```bash
+# Preview commands without executing
+./reconftw.sh -d example.com -r --dry-run
+```
+
+### Verbose Output
+
+```bash
+# Enable debug logging
+DEBUG=true ./reconftw.sh -d example.com -r
+
+# Or in config
+DEBUG=true
+```
+
+### Log Analysis
+
+```bash
+# Check execution log
+tail -f Recon/example.com/.log/reconftw.log
+
+# Check errors
+grep -i error Recon/example.com/.log/*.log
+```
+
+---
+
+## Next Steps
+
+- **[Troubleshooting](../11-troubleshooting/troubleshooting.md)** - Common issues
+- **[Configuration](../04-configuration/configuration.md)** - All options
