@@ -627,7 +627,7 @@ CLOUDHUNTER_PERMUTATION=NORMAL  # DEEP, NORMAL, or NONE
 
 1. **Use Fresh Resolvers:** Update resolvers regularly for accurate results
 
-2. **Enable API Keys:** Configure subfinder providers for comprehensive coverage
+2. **Enable API Keys:** Configure subfinder providers for full coverage
 
 3. **Adjust Threads:** Balance speed vs. accuracy based on target size
 

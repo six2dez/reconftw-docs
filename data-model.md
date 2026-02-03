@@ -80,7 +80,7 @@ Recon/example.com/
 ├── .tmp/                    # Temporary files (hidden)
 │
 ├── subdomains/              # Subdomain enumeration results
-│   ├── subdomains.txt       # ⭐ Final merged subdomains
+│   ├── subdomains.txt       # [KEY] Final merged subdomains
 │   ├── subdomains_crt.txt   # CT log subdomains
 │   ├── subdomains_passive.txt
 │   ├── subdomains_brute.txt
@@ -89,13 +89,13 @@ Recon/example.com/
 │   └── takeover.txt         # Subdomain takeover findings
 │
 ├── webs/                    # Web probing results
-│   ├── webs.txt             # ⭐ Live HTTP/HTTPS servers
+│   ├── webs.txt             # [KEY] Live HTTP/HTTPS servers
 │   ├── webs_all.txt         # All probed URLs with metadata
 │   ├── webs_info.txt        # Detailed web info (title, status, tech)
 │   └── url_extract.txt      # Extracted URLs from crawling
 │
 ├── hosts/                   # Host/IP information
-│   ├── ips.txt              # ⭐ Resolved IP addresses
+│   ├── ips.txt              # [KEY] Resolved IP addresses
 │   ├── cdn.txt              # CDN IPs (filtered)
 │   ├── portscan_active.txt  # Open ports
 │   └── portscan_active.xml  # Nmap XML output
@@ -104,13 +104,13 @@ Recon/example.com/
 │   ├── dorks.txt            # Google dork results
 │   ├── github_company_secrets.json  # GitHub leaks
 │   ├── github_dorks.txt
-│   ├── emails.txt           # ⭐ Discovered emails
+│   ├── emails.txt           # [KEY] Discovered emails
 │   ├── passwords.txt        # Leaked credentials
 │   └── metadata_results.txt # Document metadata
 │
 ├── vulns/                   # Vulnerability findings
 │   ├── nuclei_output.txt    # Nuclei text output
-│   ├── nuclei_output.json   # ⭐ Nuclei JSON (parseable)
+│   ├── nuclei_output.json   # [KEY] Nuclei JSON (parseable)
 │   ├── xss.txt              # XSS vulnerabilities
 │   ├── sqli.txt             # SQL injection
 │   ├── cors.txt             # CORS misconfigs
@@ -119,7 +119,7 @@ Recon/example.com/
 │
 ├── js/                      # JavaScript analysis
 │   ├── js_livelinks.txt     # Found JS files
-│   ├── js_secrets.txt       # ⭐ Secrets in JS
+│   ├── js_secrets.txt       # [KEY] Secrets in JS
 │   └── js_endpoints.txt     # API endpoints
 │
 ├── screenshots/             # Web screenshots
@@ -128,7 +128,7 @@ Recon/example.com/
 ├── fuzzing/                 # Directory fuzzing
 │   └── fuzzing_full.txt     # Discovered paths
 │
-└── hotlist.txt              # ⭐ Priority findings (risk-scored)
+└── hotlist.txt              # [KEY] Priority findings (risk-scored)
 ```
 
 ---

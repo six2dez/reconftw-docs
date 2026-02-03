@@ -148,7 +148,7 @@ PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open"
 # Quick scan (top 100 ports)
 PORTSCAN_ACTIVE_OPTIONS="--top-ports 100 -Pn --open"
 
-# Comprehensive scan (all ports)
+# Full port scan (all ports)
 PORTSCAN_ACTIVE_OPTIONS="-p- -sV -sC -Pn --open"
 
 # Stealth scan (slower, less detectable)

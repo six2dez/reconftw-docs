@@ -9,9 +9,6 @@ Technical terms and concepts used throughout the reconFTW documentation.
 ### Active Scanning
 Reconnaissance that directly interacts with the target, such as sending HTTP requests or DNS queries. Contrast with [Passive Scanning](#passive-scanning).
 
-### Amass
-OWASP's comprehensive subdomain enumeration tool that uses multiple data sources and techniques.
-
 ### API Key
 Authentication credential for accessing third-party services like Shodan, VirusTotal, or GitHub.
 

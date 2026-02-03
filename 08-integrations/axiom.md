@@ -2,7 +2,7 @@
 
 > **Note**: Axiom was rebranded to "Ax Framework" but the tool and commands still use `axiom-*` naming. This documentation uses "Axiom" for consistency with the actual commands.
 
-Axiom enables distributed scanning across cloud infrastructure, dramatically speeding up reconnaissance.
+Axiom enables distributed scanning across cloud infrastructure, speeding up reconnaissance by parallelizing workloads across multiple instances.
 
 ---
 

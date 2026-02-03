@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <strong>The Ultimate Automated Reconnaissance Framework</strong>
+  <strong>Automated Reconnaissance Framework</strong>
 </p>
 
 <p align="center">
@@ -22,7 +22,7 @@
 
 ## Welcome to reconFTW
 
-**reconFTW** is a powerful, modular reconnaissance automation framework designed for security researchers, penetration testers, and bug bounty hunters. It orchestrates 80+ industry-standard tools to perform comprehensive reconnaissance on your targets, from subdomain enumeration to vulnerability scanning.
+**reconFTW** is a modular reconnaissance automation framework designed for security researchers, penetration testers, and bug bounty hunters. It orchestrates 80+ security tools to perform full reconnaissance on your targets, from subdomain enumeration to vulnerability scanning.
 
 ### Why reconFTW?
 
@@ -30,8 +30,8 @@
 |---------|-------------|
 | 🔄 **Automated Workflow** | Complete reconnaissance pipeline with a single command |
 | 🧩 **Modular Design** | Enable/disable any module or function as needed |
-| ⚡ **Distributed Scanning** | Scale with [Axiom](08-integrations/axiom.md) across cloud infrastructure |
-| 📊 **Comprehensive Output** | Organized results with multiple export formats |
+| **Distributed Scanning** | Scale with [Axiom](08-integrations/axiom.md) across cloud infrastructure |
+| **Structured Output** | Organized results with multiple export formats |
 | 🔧 **Highly Configurable** | 300+ configuration options for fine-tuning |
 | 🔄 **Incremental Scans** | Only scan new findings since last run |
 | 🤖 **AI Integration** | Generate executive reports with local AI models |
@@ -43,19 +43,27 @@
 │                        reconFTW Capabilities                     │
 ├─────────────────────────────────────────────────────────────────┤
 │  OSINT           │ Google dorks, GitHub secrets, metadata,      │
-│                  │ email harvesting, API leaks, cloud enum      │
+│                  │ email harvesting, API leaks, cloud enum,     │
+│                  │ leaked credentials, S3 buckets               │
 ├──────────────────┼──────────────────────────────────────────────┤
-│  Subdomains      │ Passive, bruteforce, permutations, CT logs,  │
-│                  │ recursive, scraping, takeover detection      │
+│  Subdomains      │ 10+ passive sources, DNS bruteforce,         │
+│                  │ permutations (AI-powered), recursive enum,   │
+│                  │ CT logs, scraping, zone transfer, takeover   │
 ├──────────────────┼──────────────────────────────────────────────┤
-│  Web Analysis    │ HTTP probing, screenshots, JS analysis,      │
-│                  │ URL extraction, fuzzing, CMS detection       │
+│  Web Analysis    │ HTTP probing, screenshots, JS secrets,       │
+│                  │ URL extraction, directory fuzzing, CMS,      │
+│                  │ virtual hosts, parameters, GraphQL, gRPC     │
 ├──────────────────┼──────────────────────────────────────────────┤
-│  Vulnerabilities │ XSS, SQLi, SSRF, LFI, SSTI, CORS, CRLF,     │
-│                  │ command injection, prototype pollution       │
+│  Vulnerabilities │ Nuclei templates, XSS, SQLi, SSRF, LFI,     │
+│                  │ SSTI, CORS, CRLF, command injection,         │
+│                  │ prototype pollution, 403 bypass, smuggling   │
 ├──────────────────┼──────────────────────────────────────────────┤
-│  Host Analysis   │ Port scanning, CDN detection, WAF detection, │
-│                  │ geolocation, banner grabbing, IPv6 support   │
+│  Host Analysis   │ Port scanning (nmap/naabu), CDN detection,   │
+│                  │ WAF fingerprinting, geolocation, banners     │
+├──────────────────┼──────────────────────────────────────────────┤
+│  Automation      │ Checkpoint/resume system, incremental scans, │
+│                  │ notifications (Slack/Discord/Telegram),      │
+│                  │ Axiom distributed scanning, AI reports       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -101,7 +109,7 @@ This documentation is organized to help you get the most out of reconFTW:
 9. **[Data Model & I/O](data-model.md)** - Complete input/output reference
 10. **[Integrations](08-integrations/)** - Axiom and Faraday setup
 
-### 🚀 For Advanced Users
+### For Advanced Users
 
 11. **[Deployment](09-deployment/deployment.md)** - Docker, Terraform, VPS, CI/CD
 12. **[Performance Tuning](tuning.md)** - Optimize for speed and target size
@@ -122,7 +130,7 @@ This documentation is organized to help you get the most out of reconFTW:
 | **Recon** | `-r` | Full reconnaissance | Standard bug bounty recon |
 | **Subdomains** | `-s` | Subdomain enumeration only | Quick subdomain discovery |
 | **Passive** | `-p` | Passive reconnaissance | Stealth/non-intrusive |
-| **All** | `-a` | Full recon + vulnerabilities | Comprehensive assessment |
+| **All** | `-a` | Full recon + vulnerabilities | Full assessment |
 | **Web** | `-w` | Web analysis only | Analyze known URLs |
 | **OSINT** | `-n` | OSINT gathering only | Intelligence gathering |
 | **Custom** | `-c` | Run custom function | Advanced workflows |

@@ -2,7 +2,7 @@
 
 > **Documentation for reconFTW `dev` branch** | [View all flags](#quick-reference)
 
-This comprehensive guide covers every command-line option available in reconFTW, with detailed explanations and practical examples.
+This guide covers every command-line option available in reconFTW, with detailed explanations and practical examples.
 
 ---
 
@@ -112,7 +112,9 @@ reconFTW offers several scan modes optimized for different use cases.
 
 ### `-r, --recon` (Full Reconnaissance)
 
-**The standard bug bounty reconnaissance mode.** Performs comprehensive subdomain enumeration, web analysis, and light vulnerability scanning.
+**The standard bug bounty reconnaissance mode.** Performs full subdomain enumeration, web analysis, and light vulnerability scanning (nuclei on discovered webs).
+
+> ⚠️ **Note:** This is an active scanning mode. It sends requests to the target. Ensure you have authorization.
 
 ```bash
 ./reconftw.sh -d example.com -r
@@ -187,7 +189,9 @@ PORTSCAN_ACTIVE=false
 
 ### `-a, --all` (Full Scan with Vulnerabilities)
 
-**Complete reconnaissance plus comprehensive vulnerability scanning.**
+**Complete reconnaissance plus full vulnerability scanning.**
+
+> 🔴 **WARNING:** This is the "YOLO mode". It sends attack payloads (SQLi, XSS, etc.) to the target. Only use with explicit written authorization for penetration testing. May trigger WAFs and security alerts.
 
 ```bash
 ./reconftw.sh -d example.com -a
@@ -209,7 +213,7 @@ Everything in `-r` mode PLUS:
 
 **Duration:** 4-24+ hours
 
-**Best for:** Comprehensive security assessment, when you have time
+**Best for:** Full security assessment, when you have explicit authorization and time
 
 > ⚠️ **Warning:** This mode performs intrusive testing. Ensure you have explicit authorization.
 
@@ -456,7 +460,7 @@ INSCOPE=true  # In reconftw.cfg
 
 ### `--deep` (Deep/Thorough Mode)
 
-Enable comprehensive scanning with larger wordlists and more techniques.
+Enable extended scanning with larger wordlists and more techniques.
 
 ```bash
 ./reconftw.sh -d example.com -r --deep
@@ -469,7 +473,7 @@ Enable comprehensive scanning with larger wordlists and more techniques.
 | Subdomain wordlist | ~10k entries | ~100k+ entries |
 | Permutation depth | 1 level | Multiple levels |
 | GitHub dorks | Small list | Medium list |
-| Fuzzing wordlist | Common paths | Comprehensive |
+| Fuzzing wordlist | Common paths | Extended |
 | Recursive enumeration | Limited | Full |
 
 ### `-v, --vps` (Axiom/Distributed Mode)

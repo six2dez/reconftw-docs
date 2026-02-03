@@ -321,7 +321,7 @@ EMAILS=true
 
 ### What It Does
 
-Gathers comprehensive domain information:
+Gathers complete domain information:
 - WHOIS registration data
 - Microsoft 365/Azure tenant domains
 - Related domains via Scopify

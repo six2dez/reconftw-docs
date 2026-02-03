@@ -57,7 +57,7 @@ SUBFINDER_ENUM_TIMEOUT=180
 
 ### amass
 
-**Purpose:** Comprehensive subdomain enumeration using multiple techniques.
+**Purpose:** Multi-source subdomain enumeration using multiple techniques.
 
 **Techniques:** DNS brute-force, web scraping, APIs, certificate logs.
 

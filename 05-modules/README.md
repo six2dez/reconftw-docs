@@ -160,7 +160,7 @@ In a full scan (`-a` flag), modules execute in this order:
 5. Vulnerabilities → Security testing
 ```
 
-Each module builds on the previous one's output, creating a comprehensive reconnaissance pipeline.
+Each module builds on the previous one's output, creating a full reconnaissance pipeline.
 
 ---
 

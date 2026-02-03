@@ -86,7 +86,7 @@ COLLAB_SERVER="your_interactsh_url"
 
 ## Nuclei Scanning
 
-### `nuclei_check` - Comprehensive Vulnerability Scanning
+### `nuclei_check` - Full Vulnerability Scanning
 
 Nuclei is the primary vulnerability scanner, checking for thousands of known vulnerabilities.
 
@@ -552,7 +552,7 @@ BYPASSER4XX=true
 
 ### `test_ssl` - SSL/TLS Security
 
-Comprehensive SSL/TLS security analysis.
+Full SSL/TLS security analysis.
 
 **Issues Detected:**
 - Expired certificates

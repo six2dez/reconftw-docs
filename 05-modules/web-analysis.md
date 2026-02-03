@@ -124,7 +124,7 @@ HTTPX_FLAGS=" -follow-redirects -random-agent -status-code -silent -title -web-s
 
 ### `webprobe_full` - Uncommon Port Probing
 
-Probes a comprehensive list of ports commonly used for web services.
+Probes an extended list of ports commonly used for web services.
 
 **Ports Checked:**
 ```
@@ -232,9 +232,9 @@ VIRTUALHOSTS=false  # Disabled by default (can be slow)
 
 ## URL Collection
 
-### `urlchecks` - Comprehensive URL Extraction
+### `urlchecks` - Full URL Extraction
 
-Collects URLs from multiple sources for comprehensive coverage.
+Collects URLs from multiple sources for full coverage.
 
 **Passive Sources:**
 - Wayback Machine
@@ -360,7 +360,7 @@ URL_EXT=true
 
 ## JavaScript Analysis
 
-### `jschecks` - Comprehensive JS Analysis
+### `jschecks` - Full JS Analysis
 
 Extracts secrets, endpoints, and sensitive information from JavaScript files.
 

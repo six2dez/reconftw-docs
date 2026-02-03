@@ -23,29 +23,42 @@ cd reconftw
 
 > reconFTW finds subdomains, probes them, and scans for vulnerabilities—automatically.
 
-### The 3 Main Modes
+### Available Scan Modes
 
-| Mode | Flag | What It Does | Time |
-|------|------|--------------|------|
-| **Passive** | `-p` | No direct contact with target | ~15 min |
-| **Recon** | `-r` | Full recon, no vuln scanning | ~1-4 hours |
-| **All** | `-a` | Full recon + vulnerabilities | ~2-8 hours |
+reconFTW offers multiple modes for different use cases:
+
+| Mode | Flag | Description | Activity Level |
+|------|------|-------------|----------------|
+| **Passive** | `-p` | No direct contact with target, uses only public sources | None |
+| **Subdomains** | `-s` | Subdomain enumeration only | Low-Medium |
+| **OSINT** | `-n` | OSINT gathering only | Low |
+| **Web** | `-w` | Web analysis on known subdomains | Medium |
+| **Recon** | `-r` | **Default/recommended.** Full recon + light vuln scan (nuclei on webs) | Medium-High |
+| **All** | `-a` | Full recon + aggressive vulnerability scanning | **Very High** |
+
+> ⚠️ **Important:** Even `-r` mode performs active scanning (DNS queries, HTTP requests, port scans). Always ensure you have authorization.
+
+### About the `-a` (All) Mode
+
+> 🔴 **WARNING:** The `-a` flag runs aggressive vulnerability testing including SQLi payloads, fuzzing, and multiple scanner tools. This generates significant traffic and may trigger security alerts. Only use when you have **explicit written authorization** for penetration testing.
 
 ### Quick Decision Tree
 
 ```
-Is this your first scan on this target?
-├── Yes → Start with -p (passive)
-└── No, I've done passive
-    ├── Do I have time? → Use -r (recon)
-    └── Need vulns too? → Use -a (all)
+Do I have written authorization for this target?
+├── No → STOP. Get permission first.
+└── Yes
+    ├── First time? → Start with -p (passive)
+    ├── Need subdomains only? → Use -s
+    ├── Standard recon? → Use -r (recommended)
+    └── Full pentest scope? → Use -a (read warning above)
 ```
 
 ---
 
 ## Minute 10-15: Configure API Keys (Optional but Recommended)
 
-API keys dramatically improve results. Set up at least these 3:
+API keys improve results by adding more data sources. Set up at least these 3:
 
 ### 1. Shodan (Free tier available)
 ```bash

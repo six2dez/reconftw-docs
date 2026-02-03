@@ -18,7 +18,7 @@ reconFTW is a **modular reconnaissance automation framework** that integrates 80
 
 reconFTW follows these design principles:
 
-- **Comprehensive over fast**: Cover all attack surface, don't miss findings
+- **Thorough over fast**: Cover all attack surface, don't miss findings
 - **Modular**: Enable/disable any component without breaking others
 - **Resumable**: Never lose progress on long-running scans
 - **Configurable**: Every behavior can be customized
@@ -375,7 +375,7 @@ DEEP mode enables thorough scanning for high-value targets:
 | Wordlists | Small (~10k) | Large (~100k+) |
 | Permutations | Basic | Extensive |
 | Recursive depth | Limited | Full |
-| Fuzzing | Common paths | Comprehensive |
+| Fuzzing | Common paths | Extended |
 | Time | 1-4 hours | 4-24+ hours |
 
 ### Activation
@@ -576,7 +576,7 @@ Best for: Regular bug bounty hunting on established programs.
 
 ### Bug Bounty - New Program
 
-Best for: New programs where you want comprehensive coverage fast.
+Best for: New programs where you want full coverage quickly.
 
 ```bash
 # Full scan with vulnerabilities

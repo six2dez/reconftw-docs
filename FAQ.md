@@ -8,7 +8,7 @@ Common questions and answers about reconFTW.
 
 ### What is reconFTW?
 
-reconFTW is an automated reconnaissance framework that orchestrates 80+ security tools to perform comprehensive reconnaissance on targets. It's designed for bug bounty hunters, penetration testers, and security researchers.
+reconFTW is an automated reconnaissance framework that orchestrates 80+ security tools to perform full reconnaissance on targets. It's designed for bug bounty hunters, penetration testers, and security researchers.
 
 ### Is reconFTW free?
 
@@ -63,14 +63,39 @@ git pull
 
 ## Usage Questions
 
+### What scan modes are available?
+
+reconFTW has several modes for different scenarios:
+
+| Flag | Mode | What It Does | Use Case |
+|------|------|--------------|----------|
+| `-p` | Passive | Uses only public data sources, no direct target contact | Safe first scan, stealth |
+| `-s` | Subdomains | Subdomain enumeration (passive + active) | Quick subdomain discovery |
+| `-n` | OSINT | OSINT gathering only (dorks, emails, leaks) | Information gathering |
+| `-w` | Web | Web analysis on existing subdomains | Analyze known assets |
+| `-r` | **Recon** | **Full reconnaissance + light nuclei scan** | **Default, recommended** |
+| `-a` | All | Full recon + aggressive vulnerability scanning | Full pentest (see warning) |
+| `-c` | Custom | Run a single specific function | Advanced users |
+
 ### What's the difference between `-r` and `-a`?
 
-| Flag | Name | Includes Vulnerability Scanning |
-|------|------|--------------------------------|
-| `-r` | Recon | ❌ No |
-| `-a` | All | ✅ Yes |
+**`-r` (Recon) is the recommended default mode.** It performs:
+- Full subdomain enumeration (passive + active)
+- Web probing, screenshots, JS analysis
+- URL collection and parameter discovery
+- Light vulnerability scanning (nuclei on discovered webs/domains)
+- Port scanning
 
-Use `-r` for reconnaissance only, `-a` for full assessment including vulnerability checks.
+> ⚠️ **Note:** `-r` mode IS active scanning. It sends HTTP requests, DNS queries, and runs nuclei templates. It generates traffic to the target.
+
+**`-a` (All) adds aggressive vulnerability testing:**
+- SQLi testing with SQLMap/Ghauri
+- XSS fuzzing with Dalfox
+- SSRF, LFI, SSTI, command injection checks
+- Directory fuzzing
+- All nuclei templates including intrusive ones
+
+> 🔴 **WARNING:** The `-a` flag is the "YOLO mode". It sends attack payloads to the target. Only use with explicit written authorization for penetration testing. This mode may trigger WAFs, get your IP blocked, or cause service disruption.
 
 ### How do I scan multiple domains?
 

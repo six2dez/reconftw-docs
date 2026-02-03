@@ -80,7 +80,7 @@ cat Recon/target.com/vulns/nuclei_output.json | jq -r 'select(.severity=="critic
 
 ## Case Study 2: Security Assessment - Enterprise Client
 
-**Scenario:** Contracted for a security assessment of a Fortune 500 company. Need comprehensive coverage with minimal disruption.
+**Scenario:** Contracted for a security assessment of a Fortune 500 company. Need full coverage with minimal disruption.
 
 ### Target Profile
 - **Scope:** `corp.example.com` + IP range `10.0.0.0/8` (internal)
