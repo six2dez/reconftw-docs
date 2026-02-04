@@ -4,6 +4,32 @@ The OSINT (Open Source Intelligence) module gathers publicly available informati
 
 ---
 
+## Why OSINT First?
+
+OSINT is executed before any other module for strategic reasons:
+
+1. **Zero Target Interaction**: All queries go to third-party services (Google, GitHub, crt.sh), not the target. This means:
+   - No logs generated on target systems
+   - No risk of detection or blocking
+   - No rate limiting concerns from the target
+
+2. **Context Building**: Information gathered here informs later phases:
+   - Email patterns → potential usernames for login bruteforce
+   - Exposed API keys → direct access without exploitation
+   - Related domains → expanded attack surface
+
+3. **Quick Wins**: OSINT often reveals immediate vulnerabilities:
+   - Leaked credentials in GitHub
+   - Exposed admin panels via Google dorks
+   - Misconfigured cloud storage buckets
+
+4. **Scope Discovery**: May reveal additional targets:
+   - Acquisitions mentioned in documents
+   - Azure tenant domains
+   - Related domains via registrant data
+
+---
+
 ## Module Overview
 
 | Function | Purpose | Tools Used |

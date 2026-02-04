@@ -4,6 +4,26 @@ The web analysis module examines discovered web assets to identify technologies,
 
 ---
 
+## Why Web Analysis?
+
+Before scanning for vulnerabilities, you need to understand what you're scanning:
+
+1. **Target Validation**: Not all subdomains run web servers. HTTP probing identifies which hosts actually serve web content on which ports.
+
+2. **Technology Fingerprinting**: Different technologies have different vulnerabilities. Knowing that a target runs WordPress vs Django changes your attack approach.
+
+3. **Attack Surface Mapping**: URL collection reveals:
+   - Hidden endpoints not linked in the UI
+   - API routes
+   - Admin panels
+   - Legacy code paths
+
+4. **Input Discovery**: Parameters and endpoints found here become test targets for vulnerability scanning. Without URL collection, scanners miss most of the attack surface.
+
+5. **Efficiency**: Analyzing JavaScript and crawling once, then reusing results for multiple vulnerability tests, is more efficient than having each scanner crawl independently.
+
+---
+
 ## Module Overview
 
 | Function | Purpose | Tools |

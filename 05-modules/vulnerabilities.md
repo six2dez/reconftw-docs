@@ -16,6 +16,42 @@ The vulnerability module performs active security testing to identify exploitabl
 
 ---
 
+## Why This Order of Tests?
+
+Vulnerability checks run last in reconFTW's pipeline for important reasons:
+
+1. **Dependency Chain**: Tests require data from previous phases:
+   - URLs from web analysis → XSS, SQLi, LFI testing
+   - Parameters from param_discovery → Injection point testing
+   - JavaScript analysis → Prototype pollution candidates
+
+2. **Detection Risk**: Vuln scanning generates suspicious traffic:
+   - SQL injection payloads like `' OR 1=1--`
+   - XSS payloads with `<script>` tags
+   - SSRF callbacks to external servers
+   
+   Running this phase last means all passive/semi-active recon is complete before potential detection.
+
+3. **Resource Intensity**: Fuzzing and exploitation testing consume significant resources. Running them on a refined target list (after filtering) is more efficient than testing everything.
+
+---
+
+## Callback Servers for Blind Vulnerabilities
+
+Some vulnerabilities don't show direct responses. Blind SSRF, out-of-band XXE, and blind command injection require callback detection.
+
+reconFTW supports:
+- **interactsh**: ProjectDiscovery's callback server (default)
+- **Burp Collaborator**: If configured
+
+Configure in `reconftw.cfg`:
+```bash
+INTERACTSH_URL="https://interact.sh"
+INTERACTSH_TOKEN=""  # Optional, for private server
+```
+
+---
+
 ## Module Overview
 
 | Function | Vulnerability Type | Tools |

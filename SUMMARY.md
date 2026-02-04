@@ -28,6 +28,13 @@
   * [OPSEC and Legal](02-concepts/concepts.md#opsec-and-legal)
   * [Recommended Workflows](02-concepts/concepts.md#recommended-workflows)
 
+* [Reconnaissance Methodology Deep Dive](02-concepts/recon-methodology.md)
+  * [Why This Order](02-concepts/recon-methodology.md#why-this-order)
+  * [Passive vs Active](02-concepts/recon-methodology.md#passive-vs-active)
+  * [Wildcard Handling](02-concepts/recon-methodology.md#wildcard-handling)
+  * [Rate Limiting Strategy](02-concepts/recon-methodology.md#rate-limiting-strategy)
+  * [Scope Management](02-concepts/recon-methodology.md#scope-management)
+
 ## Usage
 
 * [Command Line Guide](03-usage/usage.md)
@@ -64,6 +71,7 @@
   * [Cloud Enumeration](05-modules/osint.md#cloud-enumeration)
 
 * [Subdomain Module](05-modules/subdomains.md)
+  * [New Features (v3.x)](05-modules/subdomains.md#new-features-v3x)
   * [Passive Enumeration](05-modules/subdomains.md#passive-enumeration)
   * [Certificate Transparency](05-modules/subdomains.md#certificate-transparency)
   * [DNS Bruteforce](05-modules/subdomains.md#dns-bruteforce)
@@ -71,6 +79,13 @@
   * [Recursive Enumeration](05-modules/subdomains.md#recursive-enumeration)
   * [Subdomain Takeover](05-modules/subdomains.md#subdomain-takeover)
   * [DNS Analysis](05-modules/subdomains.md#dns-analysis)
+
+* [Subdomain Deep Dive](05-modules/subdomains-deep-dive.md)
+  * [Execution Pipeline](05-modules/subdomains-deep-dive.md#execution-pipeline)
+  * [Passive Techniques](05-modules/subdomains-deep-dive.md#passive-techniques)
+  * [Active DNS Resolution](05-modules/subdomains-deep-dive.md#active-dns-resolution)
+  * [Deep Wildcard Detection](05-modules/subdomains-deep-dive.md#deep-wildcard-detection)
+  * [Sensitive Domain Exclusion](05-modules/subdomains-deep-dive.md#sensitive-domain-exclusion)
 
 * [Web Analysis Module](05-modules/web-analysis.md)
   * [HTTP Probing](05-modules/web-analysis.md#http-probing)
@@ -156,6 +171,7 @@
   * [Understanding DEEP Mode](tuning.md#understanding-deep-mode)
   * [Thread Optimization](tuning.md#thread-optimization)
   * [Rate Limiting Strategies](tuning.md#rate-limiting-strategies)
+  * [Parallelization](tuning.md#parallelization)
   * [Axiom Scaling](tuning.md#axiom-scaling)
 
 * [Data Model & I/O](data-model.md)

@@ -121,7 +121,9 @@ reconftw/
 │   └── modes.sh         # Scan mode orchestration
 │
 ├── lib/                 # Pure libraries (how to do it)
+│   ├── common.sh        # Shared utility functions (dedupe, ensure_dirs)
 │   ├── config.sh        # Configuration helpers
+│   ├── parallel.sh      # Parallelization framework
 │   └── validation.sh    # Input validation
 │
 └── Recon/               # Output directory
@@ -134,14 +136,16 @@ Modules are loaded in a specific order to ensure dependencies are satisfied:
 
 ```bash
 1. lib/validation.sh     # Input validation (first)
-2. modules/utils.sh      # Base utilities
-3. modules/core.sh       # Framework infrastructure
-4. modules/osint.sh      # OSINT functions
-5. modules/subdomains.sh # Subdomain functions
-6. modules/web.sh        # Web analysis functions
-7. modules/vulns.sh      # Vulnerability functions
-8. modules/axiom.sh      # Distributed scanning
-9. modules/modes.sh      # Mode orchestration (last)
+2. lib/common.sh         # Shared utilities (ensure_dirs, dedupe, etc.)
+3. lib/parallel.sh       # Parallelization framework
+4. modules/utils.sh      # Base utilities
+5. modules/core.sh       # Framework infrastructure
+6. modules/osint.sh      # OSINT functions
+7. modules/subdomains.sh # Subdomain functions
+8. modules/web.sh        # Web analysis functions
+9. modules/vulns.sh      # Vulnerability functions
+10. modules/axiom.sh     # Distributed scanning
+11. modules/modes.sh     # Mode orchestration (last)
 ```
 
 ### Key Functions
@@ -178,6 +182,34 @@ function some_scan() {
 | `should_run_deep()` | Check if DEEP mode should activate |
 | `retry_with_backoff()` | Retry failed operations |
 | `check_disk_space()` | Verify available storage |
+
+#### Common Library Functions (lib/common.sh)
+
+| Function | Purpose |
+|----------|---------|
+| `ensure_dirs()` | Create multiple directories safely |
+| `safe_backup()` | Backup file with timestamp |
+| `skip_notification()` | Log skipped function notification |
+| `count_lines()` | Count lines in file safely |
+| `safe_count()` | Count with fallback to 0 |
+| `dedupe_append()` | Append and deduplicate file |
+| `run_tool()` | Execute tool with timeout and error handling |
+| `process_results()` | Process and dedupe results |
+| `should_run_function()` | Check if function should run (checkpoint aware) |
+
+#### Parallelization Functions (lib/parallel.sh)
+
+| Function | Purpose |
+|----------|---------|
+| `parallel_run()` | Run commands in parallel with job limit |
+| `parallel_funcs()` | Run bash functions in parallel |
+| `parallel_batch()` | Run commands with rate limiting |
+| `parallel_passive_enum()` | Parallel passive subdomain enumeration |
+| `parallel_active_enum()` | Parallel active DNS enumeration |
+| `parallel_postactive_enum()` | Parallel post-resolution (TLS, analytics) |
+| `parallel_brute_enum()` | Parallel brute force (resource limited) |
+| `parallel_web_vulns()` | Parallel web vulnerability scanning |
+| `parallel_subdomains_full()` | Orchestrate full parallelized subdomain enum |
 
 ---
 

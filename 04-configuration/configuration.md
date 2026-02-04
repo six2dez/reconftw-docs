@@ -214,6 +214,9 @@ SUBDOMAINS_GENERAL=true      # Master toggle for subdomain module
 SUBPASSIVE=true              # Passive enumeration (APIs, CT logs)
 SUBCRT=true                  # Certificate transparency search
 CTR_LIMIT=999999             # Max CT results
+DNS_TIME_FENCE_DAYS=0        # Filter CT results to last N days (0=disabled)
+DEEP_WILDCARD_FILTER=false   # Multi-level wildcard detection
+EXCLUDE_SENSITIVE=false      # Skip gov/mil/edu domains
 SUBNOERROR=false             # DNS NOERROR response checking
 SUBANALYTICS=true            # Google Analytics correlation
 SUBBRUTE=true                # DNS bruteforcing
@@ -230,6 +233,63 @@ S3BUCKETS=true               # S3 bucket misconfiguration checks
 REVERSE_IP=false             # Reverse IP lookups (enable for IP/CIDR targets)
 INSCOPE=false                # Apply inscope filtering
 ```
+
+#### DNS_TIME_FENCE_DAYS
+
+Filters Certificate Transparency (crt.sh) results to certificates issued within the last N days.
+
+```bash
+DNS_TIME_FENCE_DAYS=90  # Only certificates from last 90 days
+DNS_TIME_FENCE_DAYS=0   # Disabled (default) - return all results
+```
+
+**Why use this:**
+- CT logs contain historical certificates, including expired and decommissioned domains
+- Old certificates often point to infrastructure that no longer exists
+- Setting to 90 days typically reduces noise by 20-40% while keeping relevant results
+
+#### DEEP_WILDCARD_FILTER
+
+Enables iterative wildcard detection at all subdomain levels, not just the root.
+
+```bash
+DEEP_WILDCARD_FILTER=true   # Enable multi-level wildcard detection
+DEEP_WILDCARD_FILTER=false  # Standard wildcard detection only (default)
+```
+
+**How it works:**
+1. Extracts unique parent domains from resolved subdomains
+2. Generates random probe hostname for each parent (e.g., `a1b2c3d4.api.example.com`)
+3. If random probe resolves, parent is a wildcard
+4. Filters all subdomains under detected wildcard parents
+5. Repeats up to 5 iterations to catch nested wildcards
+
+**Why use this:**
+- Enterprise targets often have deep wildcards (e.g., `*.na45.salesforce.com`)
+- Standard detection only checks `*.example.com`
+- Removes 50-80% false positives on enterprise infrastructure
+- Detected wildcards saved to `subdomains/wildcards_detected.txt`
+
+#### EXCLUDE_SENSITIVE
+
+Prevents scanning domains that match patterns in `config/sensitive_domains.txt`.
+
+```bash
+EXCLUDE_SENSITIVE=true   # Skip sensitive domains
+EXCLUDE_SENSITIVE=false  # Scan all domains (default)
+```
+
+**Excluded patterns include:**
+- Government: `*.gov`, `*.gob.*`, `*.gouv.*`
+- Military: `*.mil`, `*.defense.*`
+- Educational: `*.edu`, `*.ac.*`
+- Financial: `*.bank`, `*.banking.*`
+- Critical infrastructure: `*.nhs.*`, `*.hospital.*`, `*.police.*`
+
+**Why use this:**
+- Legal protection when scanning wildcard scopes
+- Prevents accidental contact with sensitive infrastructure
+- Patterns can be customized in `config/sensitive_domains.txt`
 
 ### Permutation Settings
 

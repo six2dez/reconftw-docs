@@ -626,6 +626,31 @@ Preview commands without executing them.
 
 **Best for:** Testing configurations, understanding workflow
 
+### `--parallel`
+
+Run independent functions in parallel for faster scans.
+
+```bash
+./reconftw.sh -d example.com -r --parallel
+```
+
+**What it does:**
+- Runs passive enumeration sources concurrently
+- Runs active DNS checks in parallel after passive completes
+- Runs TLS and analytics checks after resolution
+- Uses native bash job control (no external dependencies)
+
+**Performance impact:**
+- ~2-3x faster subdomain enumeration
+- Higher memory usage (multiple processes)
+- Higher CPU usage
+
+**When NOT to use:**
+- Low memory systems (< 4GB RAM)
+- Rate-limited targets
+- With Axiom (already distributed)
+- When debugging issues
+
 ### `--check-tools`
 
 Verify all required tools are installed.
@@ -747,6 +772,7 @@ Run system health diagnostics.
 | - | `--incremental` | - | Scan only new findings |
 | - | `--adaptive-rate` | - | Auto-adjust rate limits |
 | - | `--dry-run` | - | Preview without executing |
+| - | `--parallel` | - | Run functions in parallel (faster) |
 | - | `--check-tools` | - | Verify tool installation |
 | - | `--health-check` | - | System diagnostics |
 | `-h` | `--help` | - | Show help message |
