@@ -501,18 +501,132 @@ Key variables used throughout reconFTW:
 ## Visual: Architecture Diagram
 
 ```
-<!-- IMAGE PLACEHOLDER: architecture-diagram.png
-     
-     Description: A visual diagram showing:
-     1. reconftw.sh as the central orchestrator
-     2. Arrows pointing to each module (osint.sh, subdomains.sh, etc.)
-     3. Configuration feeding into the main script
-     4. Output flowing to Recon/<domain>/ directory
-     5. Optional Axiom fleet for distributed execution
-     
-     Style: Clean flowchart with color-coded modules
-     Size: 800x600px recommended
--->
+                                    ┌─────────────────────────────────────┐
+                                    │           CONFIGURATION              │
+                                    │  reconftw.cfg  │  secrets.cfg        │
+                                    │  ─────────────────────────────────   │
+                                    │  • API keys    • Module toggles      │
+                                    │  • Wordlists   • Rate limits         │
+                                    └───────────────────┬─────────────────┘
+                                                        │
+                                                        ▼
+┌────────────────────┐         ┌─────────────────────────────────────────────────────┐
+│      INPUT         │         │                  reconftw.sh                        │
+│  ────────────────  │────────▶│              (Main Orchestrator)                    │
+│  -d domain.com     │         │  ───────────────────────────────────────────────    │
+│  -l targets.txt    │         │  • Argument parsing    • Module loading             │
+│  -m multi.txt      │         │  • Checkpoint system   • Notification hooks         │
+└────────────────────┘         └────────────────────────┬────────────────────────────┘
+                                                        │
+                     ┌──────────────────────────────────┼──────────────────────────────────┐
+                     │                                  │                                  │
+                     ▼                                  ▼                                  ▼
+        ┌────────────────────┐            ┌────────────────────┐            ┌────────────────────┐
+        │     lib/           │            │     modules/       │            │     config/        │
+        │  ────────────────  │            │  ────────────────  │            │  ────────────────  │
+        │  common.sh         │            │  osint.sh          │            │  amass_config.ini  │
+        │  parallel.sh       │            │  subdomains.sh     │            │  nuclei_config.yml │
+        │  validation.sh     │            │  web.sh            │            │  sensitive_domains │
+        │                    │            │  vulns.sh          │            │  ...               │
+        │  Utilities for:    │            │  core.sh           │            │                    │
+        │  • Parallelization │            │  modes.sh          │            │  Tool configs      │
+        │  • Error handling  │            │  axiom.sh          │            │  Wordlists paths   │
+        │  • File operations │            │  utils.sh          │            │                    │
+        └────────────────────┘            └─────────┬──────────┘            └────────────────────┘
+                                                    │
+                     ┌──────────────────────────────┴──────────────────────────────┐
+                     │                       SCAN PHASES                           │
+                     │  ──────────────────────────────────────────────────────────  │
+                     │                                                             │
+                     │  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐     │
+                     │  │ 1.OSINT │──▶│ 2.SUBS  │──▶│ 3.WEB   │──▶│ 4.VULNS │     │
+                     │  │(passive)│   │(active) │   │(probe)  │   │(exploit)│     │
+                     │  └─────────┘   └─────────┘   └─────────┘   └─────────┘     │
+                     │                                                             │
+                     │  Data flows from each phase to the next                     │
+                     └──────────────────────────────┬──────────────────────────────┘
+                                                    │
+                                                    ▼
+                              ┌─────────────────────────────────────────────────┐
+                              │               OUTPUT STRUCTURE                   │
+                              │  Recon/<domain>/                                │
+                              │  ─────────────────────────────────────────────  │
+                              │  ├── subdomains/    (discovered subs)          │
+                              │  ├── webs/          (live web URLs)            │
+                              │  ├── hosts/         (IP data, ports)           │
+                              │  ├── vulns/         (vulnerability results)    │
+                              │  ├── osint/         (passive intel)            │
+                              │  ├── screenshots/   (web captures)             │
+                              │  ├── .called_fn/    (checkpoint markers)       │
+                              │  └── .log/          (execution logs)           │
+                              └─────────────────────────────────────────────────┘
+                                                    │
+                     ┌──────────────────────────────┴──────────────────────────────┐
+                     │                     OPTIONAL: AXIOM                         │
+                     ▼                                                             │
+        ┌────────────────────────────────────────────────────────────────┐        │
+        │                    Distributed Execution                        │        │
+        │  ────────────────────────────────────────────────────────────  │        │
+        │  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐  ┌────────┐   │        │
+        │  │ node01 │  │ node02 │  │ node03 │  │ node04 │  │ node05 │   │◀───────┘
+        │  └────────┘  └────────┘  └────────┘  └────────┘  └────────┘   │
+        │                                                                │
+        │  Splits workload across cloud instances for faster scanning    │
+        └────────────────────────────────────────────────────────────────┘
+```
+
+### Module Interaction Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           DETAILED DATA FLOW                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  INPUT: domain.com                                                          │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌──────────────┐                                                           │
+│  │    OSINT     │──▶ osint/emails.txt, osint/dorks.txt                      │
+│  │  (passive)   │    osint/github_secrets.json                              │
+│  └──────┬───────┘                                                           │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌──────────────┐    Passive: subfinder, amass, crt.sh                      │
+│  │  SUBDOMAINS  │──▶ Active:  puredns, massdns                              │
+│  │  (enum)      │    Output:  subdomains/subdomains.txt                     │
+│  └──────┬───────┘                                                           │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌──────────────┐                                                           │
+│  │  WEB PROBE   │──▶ webs/webs.txt (live HTTP/HTTPS URLs)                   │
+│  │  (httpx)     │    webs/webs_info.txt (titles, status, tech)              │
+│  └──────┬───────┘                                                           │
+│         │                                                                    │
+│         ├───────────────────────┬───────────────────────┐                   │
+│         ▼                       ▼                       ▼                   │
+│  ┌──────────────┐       ┌──────────────┐       ┌──────────────┐            │
+│  │  URL CHECK   │       │  JS CHECKS   │       │  SCREENSHOTS │            │
+│  │  (katana)    │       │  (xnlink)    │       │  (nuclei)    │            │
+│  └──────┬───────┘       └──────┬───────┘       └──────────────┘            │
+│         │                       │                                           │
+│         ▼                       ▼                                           │
+│  ┌──────────────┐       ┌──────────────┐                                    │
+│  │  gf patterns │       │  JS secrets  │                                    │
+│  │  (params)    │       │  (API keys)  │                                    │
+│  └──────┬───────┘       └──────────────┘                                    │
+│         │                                                                    │
+│         ▼                                                                    │
+│  ┌──────────────────────────────────────────────────────────────────┐       │
+│  │                        VULNERABILITY SCANNING                     │       │
+│  │  ─────────────────────────────────────────────────────────────   │       │
+│  │  nuclei (CVEs)  │  dalfox (XSS)  │  sqlmap (SQLi)  │  ffuf (fuzz)│       │
+│  │  cors           │  ssrf          │  lfi            │  ssti       │       │
+│  └──────────────────────────────────────────────────────────────────┘       │
+│         │                                                                    │
+│         ▼                                                                    │
+│  vulns/nuclei_output/, vulns/xss.txt, vulns/sqli.txt, etc.                  │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
