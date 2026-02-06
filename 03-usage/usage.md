@@ -558,6 +558,10 @@ Generate AI-powered reports after scan completion.
 - reconftw_ai tool installed
 - Configured in reconftw.cfg
 
+**Generated artifacts:**
+- `ai_result/reconftw_analysis.json` (machine-readable report)
+- `ai_result/reconftw_analysis_<profile>_<timestamp>.md|txt` (human-readable report)
+
 **Report types:**
 - `executive` - High-level summary
 - `brief` - Concise findings

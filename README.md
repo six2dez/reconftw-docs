@@ -34,7 +34,7 @@
 | **Report Rebuild Mode** | Recreate report/export artifacts from existing scan data |
 | **Highly Configurable** | 300+ configuration options for fine-tuning |
 | **Incremental Scans** | Only scan new findings since last run |
-| **AI Integration** | Generate executive reports with local AI models |
+| **AI Integration** | Generate structured JSON + markdown/txt security summaries with local AI models |
 
 ### What Can reconFTW Do?
 

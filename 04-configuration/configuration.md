@@ -580,9 +580,16 @@ FARADAY_WORKSPACE="reconftw"
 ## AI Settings
 
 ```bash
-AI_MODEL="llama3:8b"                 # AI model to use
-AI_REPORT_TYPE="md"                  # Report format (md, txt)
+AI_EXECUTABLE="python3"              # Fallback python executable (if reconftw_ai venv is missing)
+AI_MODEL="llama3:8b"                 # Ollama model name to use
+AI_REPORT_TYPE="md"                  # Human report format (md, txt)
 AI_REPORT_PROFILE="bughunter"        # Profile: executive, brief, bughunter
+AI_PROMPTS_FILE=""                   # Optional custom prompts file (empty = default)
+AI_MAX_CHARS_PER_FILE=50000          # Max chars loaded per file before truncation
+AI_MAX_FILES_PER_CATEGORY=200        # Max files loaded per category
+AI_REDACT=true                       # Redact sensitive indicators before AI processing
+AI_ALLOW_MODEL_PULL=false            # Allow auto-pull of missing model via ollama pull
+AI_STRICT=false                      # Fail AI step if one or more categories have no data
 ```
 
 ---

@@ -906,17 +906,18 @@ gowitness report serve
 ### AI-Generated Reports
 
 ```bash
-# Generate AI report
+# Generate AI report (profile/format come from reconftw.cfg)
 ./reconftw.sh -d example.com -y
-
-# Custom report type
-./reconftw.sh -d example.com -y --report-type executive
 ```
 
-**Report Types:**
-- `detailed` - Technical deep-dive
-- `executive` - High-level summary
-- `compliance` - Compliance-focused
+**AI artifacts:**
+- `ai_result/reconftw_analysis.json` (structured output)
+- `ai_result/reconftw_analysis_<profile>_<timestamp>.md|txt` (human-readable output)
+
+**Profiles (`AI_REPORT_PROFILE`):**
+- `executive` - High-level non-technical summary
+- `brief` - Concise prioritized findings
+- `bughunter` - Technical offensive-style analysis
 
 ### Manual Report Creation
 

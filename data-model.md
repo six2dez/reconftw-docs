@@ -434,12 +434,14 @@ Machine-readable asset inventory:
 {"type":"vulnerability","value":"cve-2021-44228","host":"api.example.com"}
 ```
 
-### HTML Report (with AI)
+### AI Report Artifacts
 
 When using `-y/--ai`:
 ```
 Recon/example.com/
-└── report.html    # AI-generated summary report
+└── ai_result/
+    ├── reconftw_analysis.json
+    └── reconftw_analysis_<profile>_<timestamp>.md|txt
 ```
 
 ---

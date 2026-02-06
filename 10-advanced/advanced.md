@@ -539,28 +539,31 @@ notification() {
 
 ```bash
 # In reconftw.cfg
-AI_REPORT=true
-AI_MODEL="gpt-4"
-AI_REPORT_TYPE="detailed"  # detailed, executive, compliance
+AI_MODEL="llama3:8b"
+AI_REPORT_TYPE="md"        # md, txt
+AI_REPORT_PROFILE="bughunter"  # executive, brief, bughunter
+AI_PROMPTS_FILE=""         # Optional custom prompts file
+AI_MAX_CHARS_PER_FILE=50000
+AI_MAX_FILES_PER_CATEGORY=200
+AI_REDACT=true
+AI_ALLOW_MODEL_PULL=false
+AI_STRICT=false
 ```
 
 ### Custom Report Prompts
 
 ```bash
-# Custom system prompt
-AI_SYSTEM_PROMPT="You are a senior penetration tester..."
-
-# Custom report sections
-AI_REPORT_SECTIONS="executive_summary,findings,recommendations,methodology"
+# Use a custom prompts JSON file (same schema as reconftw_ai/prompts.json)
+AI_PROMPTS_FILE="/path/to/custom_prompts.json"
 ```
 
 ### Report Types
 
 | Type | Focus | Audience |
 |------|-------|----------|
-| `detailed` | Technical deep-dive | Security team |
-| `executive` | High-level summary | Management |
-| `compliance` | Compliance mapping | Auditors |
+| `executive` | High-level non-technical summary | Management |
+| `brief` | Concise prioritized findings | Security team |
+| `bughunter` | Technical offensive-style analysis | Pentesters / bug bounty |
 
 ---
 
