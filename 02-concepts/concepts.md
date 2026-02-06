@@ -47,6 +47,11 @@ reconFTW implements a structured reconnaissance methodology following industry b
 │  • API leaks      • Permutations  • JS Analysis   • Misconfigs     │
 │  • GitHub         • Takeovers     • CMS detect    • SSL/TLS        │
 │                                                                      │
+│                     Reporting / Automation Layer                     │
+│             • perf_summary.json • report/report.json                │
+│             • report/index.html • report/* exports                  │
+│             • monitor deltas and alerts snapshots                   │
+│                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 

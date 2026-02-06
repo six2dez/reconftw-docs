@@ -168,7 +168,7 @@ webs/webs_uncommon_ports.txt
 WEBPROBEFULL=true
 HTTPX_UNCOMMONPORTS_THREADS=100
 HTTPX_UNCOMMONPORTS_TIMEOUT=10
-UNCOMMON_PORTS_WEB="81,300,591,..."
+UNCOMMON_PORTS_WEB=$(cat "${SCRIPTPATH}/config/uncommon_ports_web.txt" 2>/dev/null | tr -d '\n')
 ```
 
 ---

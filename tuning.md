@@ -122,6 +122,43 @@ AXIOM_FLEET_COUNT=20
 
 ---
 
+## Auto-Tuning with PERF_PROFILE
+
+reconFTW can auto-tune key concurrency knobs from host resources.
+
+```bash
+# In reconftw.cfg
+PERF_PROFILE="balanced"   # low | balanced | max
+```
+
+Practical guidance:
+- `low`: small VPS, stealth scans, conservative concurrency
+- `balanced`: default for most environments
+- `max`: dedicated runners with enough CPU/RAM
+
+`PERF_PROFILE` tunes job/threads at runtime and is recorded in `.log/perf_summary.json`.
+
+---
+
+## Cache and Refresh Strategy
+
+Use cache TTLs to avoid re-fetching heavy resources on each run:
+
+```bash
+CACHE_MAX_AGE_DAYS=30
+CACHE_MAX_AGE_DAYS_RESOLVERS=7
+CACHE_MAX_AGE_DAYS_WORDLISTS=30
+CACHE_MAX_AGE_DAYS_TOOLS=14
+```
+
+For one-off freshness runs:
+
+```bash
+./reconftw.sh -d target.com -r --refresh-cache
+```
+
+---
+
 ## Understanding DEEP Mode
 
 DEEP mode runs additional checks when target size is below threshold.
@@ -553,7 +590,7 @@ HTTPX_THREADS=10
 
 ```bash
 # Watch log
-tail -f Recon/target.com/.log/reconftw.log
+tail -f "$(ls -1t Recon/target.com/.log/*.txt | head -n1)"
 
 # Check completed functions
 ls Recon/target.com/.called_fn/
@@ -592,8 +629,3 @@ HTTPX_RATELIMIT=10 && NUCLEI_RATELIMIT=10
 # FAST scan - speed priority
 ./reconftw.sh -d target.com -p  # Just passive
 ```
-
----
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026

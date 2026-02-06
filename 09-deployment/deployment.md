@@ -592,7 +592,7 @@ jobs:
           cd reconftw/Recon/${{ matrix.target }}
           # Count new findings
           NEW_SUBS=$(wc -l < subdomains/subdomains.txt 2>/dev/null || echo 0)
-          VULNS=$(cat vulns/nuclei_output.json 2>/dev/null | jq -s 'length' || echo 0)
+          VULNS=$(cat nuclei_output/*_json.txt 2>/dev/null | jq -s 'length' || echo 0)
           echo "new_subs=$NEW_SUBS" >> $GITHUB_OUTPUT
           echo "vulns=$VULNS" >> $GITHUB_OUTPUT
           
@@ -782,13 +782,14 @@ pipeline {
         stage('Notify') {
             when {
                 expression {
-                    return fileExists('reconftw/Recon/${TARGET}/vulns/nuclei_output.json')
+                    return fileExists("reconftw/Recon/${TARGET}/nuclei_output/critical_json.txt") || \
+                           fileExists("reconftw/Recon/${TARGET}/nuclei_output/high_json.txt")
                 }
             }
             steps {
                 script {
                     def vulnCount = sh(
-                        script: 'cat reconftw/Recon/${TARGET}/vulns/nuclei_output.json | jq -s length',
+                        script: 'cat reconftw/Recon/${TARGET}/nuclei_output/*_json.txt 2>/dev/null | jq -s length',
                         returnStdout: true
                     ).trim()
                     
@@ -848,7 +849,7 @@ done < "$TARGETS_FILE"
 find "$RESULTS_PATH" -maxdepth 1 -type d -mtime +28 -exec rm -rf {} \;
 
 # Send summary
-TOTAL_VULNS=$(cat "$RESULTS_PATH/$DATE"/*/vulns/nuclei_output.json 2>/dev/null | jq -s 'length')
+TOTAL_VULNS=$(cat "$RESULTS_PATH/$DATE"/*/nuclei_output/*_json.txt 2>/dev/null | jq -s 'length')
 echo "Weekly scan complete. Total vulnerabilities: $TOTAL_VULNS" | \
     mail -s "reconFTW Weekly Report" security@company.com
 ```

@@ -55,7 +55,7 @@ wc -l Recon/target.com/subdomains/subdomains.txt
 
 # Phase 3: Check results immediately
 cat Recon/target.com/subdomains/takeover.txt
-cat Recon/target.com/vulns/nuclei_output.json | jq -r 'select(.severity=="critical")'
+cat Recon/target.com/nuclei_output/critical_json.txt | jq -r '.'
 ```
 
 ### Results
@@ -63,9 +63,9 @@ cat Recon/target.com/vulns/nuclei_output.json | jq -r 'select(.severity=="critic
 | Finding | Severity | File Location |
 |---------|----------|---------------|
 | Subdomain takeover on `old.target.com` | High | `subdomains/takeover.txt` |
-| Exposed Jenkins on `ci.target.com` | Critical | `vulns/nuclei_output.json` |
+| Exposed Jenkins on `ci.target.com` | Critical | `nuclei_output/critical_json.txt` |
 | S3 bucket listing | Medium | `osint/cloud_enum.txt` |
-| 3 exposed admin panels | High | `vulns/nuclei_output.json` |
+| 3 exposed admin panels | High | `nuclei_output/high_json.txt` |
 
 **Time to first finding:** 23 minutes (subdomain takeover)
 
@@ -155,7 +155,7 @@ PORTSCAN_ACTIVE=true
   -f enterprise-assessment.cfg
 
 # Review and prioritize
-cat Recon/corp.example.com/vulns/nuclei_output.json | \
+cat Recon/corp.example.com/nuclei_output/*_json.txt | \
   jq -r 'select(.severity=="critical")' > critical_findings.json
 ```
 
@@ -174,9 +174,9 @@ cat Recon/corp.example.com/vulns/nuclei_output.json | \
 | Subdomains | 4,892 | `subdomains/subdomains.txt` |
 | Live web servers | 1,247 | `webs/webs.txt` |
 | Open ports | 8,432 | `hosts/portscan_active.txt` |
-| Critical vulns | 12 | `vulns/nuclei_output.json` |
-| High vulns | 47 | `vulns/nuclei_output.json` |
-| Medium vulns | 183 | `vulns/nuclei_output.json` |
+| Critical vulns | 12 | `nuclei_output/critical_json.txt` |
+| High vulns | 47 | `nuclei_output/high_json.txt` |
+| Medium vulns | 183 | `nuclei_output/medium_json.txt` |
 | Email addresses | 234 | `osint/emails.txt` |
 | GitHub secrets | 8 | `osint/github_company_secrets.json` |
 
@@ -191,7 +191,7 @@ cat Recon/corp.example.com/vulns/nuclei_output.json | \
 
 ```bash
 # Export all critical/high findings
-cat Recon/corp.example.com/vulns/nuclei_output.json | \
+cat Recon/corp.example.com/nuclei_output/*_json.txt | \
   jq -r 'select(.severity=="critical" or .severity=="high") | 
   [.host, .severity, ."template-id", .name] | @csv' > findings.csv
 
@@ -400,7 +400,7 @@ comm -23 <(sort "$NEW/subdomains/subdomains.txt") \
          <(sort "$OLD/subdomains/subdomains.txt") >> "$NEW/diff_report.txt"
 
 echo -e "\n=== New Vulnerabilities ===" >> "$NEW/diff_report.txt"
-diff "$OLD/vulns/nuclei_output.json" "$NEW/vulns/nuclei_output.json" \
+diff "$OLD/nuclei_output/critical_json.txt" "$NEW/nuclei_output/critical_json.txt" \
   | grep "^>" >> "$NEW/diff_report.txt"
 ```
 
@@ -441,8 +441,3 @@ Full report: /opt/recon_results/2024-01-15/
 | CI/CD monitoring | `-r` | `-o`, `-f` | Passive only, notifications |
 | Quick triage | `-p` | None | Default passive |
 | Deep dive (single target) | `-a --deep` | None | Enable everything |
-
----
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026

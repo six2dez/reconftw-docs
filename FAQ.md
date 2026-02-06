@@ -356,8 +356,8 @@ Open a GitHub issue with:
 
 Logs are in the scan directory:
 ```bash
-cat Recon/example.com/.log/reconftw.log
-cat Recon/example.com/.log/errors.log
+ls -1t Recon/example.com/.log/*.txt | head -n1 | xargs -I {} tail -n 200 {}
+cat Recon/example.com/.log/perf_summary.json
 ```
 
 ---

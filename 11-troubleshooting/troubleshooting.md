@@ -402,7 +402,7 @@ axiom-exec "cat /home/op/lists/resolvers.txt | head -5"
 3. **All tools failed:**
    ```bash
    # Check logs
-   cat Recon/example.com/.log/*.log | grep -i error
+   cat Recon/example.com/.log/*.txt | grep -i error
    ```
 
 4. **API keys missing:**
@@ -427,12 +427,12 @@ Files expected but not present in output.
 
 2. **Check logs for errors:**
    ```bash
-   grep -i "error\|fail" Recon/example.com/.log/*.log
+   grep -i "error\|fail" Recon/example.com/.log/*.txt
    ```
 
 3. **Rerun specific function:**
    ```bash
-   rm Recon/example.com/.called_fn/nuclei_check
+   rm Recon/example.com/.called_fn/.nuclei_check
    ./reconftw.sh -d example.com -c nuclei_check
    ```
 
@@ -457,6 +457,45 @@ rm -rf Recon/example.com/.called_fn/*
 # Rescan
 ./reconftw.sh -d example.com -r
 ```
+
+---
+
+### Report Files Not Generated
+
+**Symptom:**
+`Recon/<target>/report/` exists but files are missing or empty.
+
+**Solution:**
+```bash
+# Rebuild reports from existing results
+./reconftw.sh -d example.com --report-only --export all
+
+# Verify source artifacts
+ls -la Recon/example.com/{subdomains,webs,hosts,nuclei_output}
+```
+
+If `jq` is missing, install it; JSON/CSV rendering quality degrades without it.
+
+---
+
+### Monitor Mode Not Progressing
+
+**Symptom:**
+Monitor exits early or does not rotate cycles.
+
+**Solution:**
+```bash
+# Validate monitor inputs
+./reconftw.sh -d example.com -r --monitor --monitor-interval 30 --monitor-cycles 2
+
+# For web mode with lists
+./reconftw.sh -d example.com -l urls.txt -w --monitor --monitor-interval 30
+```
+
+Checks:
+- `-m` is not supported in monitor mode
+- `-l` is only allowed with `-w`
+- `MONITOR_INTERVAL_MIN` must be integer >= 1
 
 ---
 
@@ -559,20 +598,17 @@ go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
 rm -rf Recon/example.com/.called_fn/
 
 # Reset specific function
-rm Recon/example.com/.called_fn/function_name
+rm Recon/example.com/.called_fn/.function_name
 ```
 
 ### Check Logs
 
 ```bash
-# Main log
-cat Recon/example.com/.log/reconftw.log
-
-# Error log
-cat Recon/example.com/.log/errors.log
+# Latest run log
+ls -1t Recon/example.com/.log/*.txt | head -n1 | xargs -I {} tail -n 200 {}
 
 # Live monitoring
-tail -f Recon/example.com/.log/reconftw.log
+tail -f "$(ls -1t Recon/example.com/.log/*.txt | head -n1)"
 ```
 
 ---
@@ -587,10 +623,6 @@ tail -f Recon/example.com/.log/reconftw.log
 
 # System health
 ./reconftw.sh --health-check
-
-# Show version
-git rev-parse --abbrev-ref HEAD
-git describe --tags 2>/dev/null || git rev-parse --short HEAD
 ```
 
 ### Resource Check
@@ -633,7 +665,7 @@ cat resolvers.txt | head -5 | xargs -I {} dig @{} example.com
 ### Reporting Bugs
 
 Include:
-1. reconFTW version: `git rev-parse --abbrev-ref HEAD` and `git describe --tags 2>/dev/null || git rev-parse --short HEAD`
+1. commit hash and branch: `git rev-parse --abbrev-ref HEAD && git rev-parse --short HEAD`
 2. OS version: `cat /etc/os-release`
 3. Error message (full)
 4. Steps to reproduce

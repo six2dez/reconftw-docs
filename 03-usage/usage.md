@@ -1,7 +1,5 @@
 # Command Line Usage Guide
 
-> **Documentation for reconFTW `dev` branch** | [View all flags](#quick-reference)
-
 This guide covers every command-line option available in reconFTW, with detailed explanations and practical examples.
 
 ---
@@ -651,6 +649,81 @@ Run independent functions in parallel for faster scans.
 - With Axiom (already distributed)
 - When debugging issues
 
+### `--monitor`
+
+Enable continuous monitoring mode for repeated reconnaissance cycles on the same target.
+
+```bash
+./reconftw.sh -d example.com -r --monitor
+```
+
+**Behavior:**
+1. Forces incremental/diff behavior each cycle
+2. Captures cycle deltas in `.incremental/history/`
+3. Writes `delta.json` and `alerts.json` per cycle
+4. Rebuilds report artifacts after each cycle
+
+**Scope rules:**
+- Supports a single target
+- `-l` is only accepted when mode is `-w`
+- Ignores `-o` to preserve stable state and history
+
+### `--monitor-interval <minutes>`
+
+Set sleep interval between monitor cycles.
+
+```bash
+./reconftw.sh -d example.com -r --monitor --monitor-interval 30
+```
+
+### `--monitor-cycles <n>`
+
+Stop monitor mode after `n` cycles (`0` means infinite).
+
+```bash
+./reconftw.sh -d example.com -r --monitor --monitor-cycles 48
+```
+
+### `--report-only`
+
+Rebuild reports from existing artifacts without running scanning modules.
+
+```bash
+./reconftw.sh -d example.com --report-only
+```
+
+**Use cases:**
+- Re-render HTML/JSON report after post-processing
+- Regenerate exports from an old scan folder
+- CI jobs that only package reporting artifacts
+
+**Constraints:**
+- Requires `-d <domain>`
+- Does not support `-l` or `-m`
+- Uses existing artifacts under `Recon/<domain>/` (it does not run recon modules)
+
+### `--refresh-cache`
+
+Force refresh cached resources (resolvers and wordlist-related data) for the current run.
+
+```bash
+./reconftw.sh -d example.com -r --refresh-cache
+```
+
+### `--export <json|html|csv|all>`
+
+Control report/export artifacts emitted at the end of the run (or with `--report-only`).
+
+```bash
+./reconftw.sh -d example.com -r --export all
+```
+
+**Available values:**
+- `json`: JSONL exports (`report/findings_normalized.jsonl`, `report/export_all.jsonl`)
+- `html`: consolidated HTML report (`report/index.html`)
+- `csv`: CSV artifacts (`report/*.csv`) plus normalized JSONL
+- `all`: HTML + JSONL + CSV
+
 ### `--check-tools`
 
 Verify all required tools are installed.
@@ -727,6 +800,23 @@ Run system health diagnostics.
 ./reconftw.sh --health-check && ./reconftw.sh -d target.com -r -z
 ```
 
+### Continuous Monitoring
+
+```bash
+# Every 30 minutes, stop after 48 cycles
+./reconftw.sh -d target.com -r --monitor --monitor-interval 30 --monitor-cycles 48
+```
+
+### Reporting and Exports
+
+```bash
+# Rebuild report files only
+./reconftw.sh -d target.com --report-only --export all
+
+# Normal scan with export bundle
+./reconftw.sh -d target.com -r --export all
+```
+
 ### Scoped Assessment
 
 ```bash
@@ -773,6 +863,13 @@ Run system health diagnostics.
 | - | `--adaptive-rate` | - | Auto-adjust rate limits |
 | - | `--dry-run` | - | Preview without executing |
 | - | `--parallel` | - | Run functions in parallel (faster) |
+| - | `--no-parallel` | - | Force sequential execution |
+| - | `--monitor` | - | Continuous monitoring mode |
+| - | `--monitor-interval` | minutes | Minutes between monitor cycles |
+| - | `--monitor-cycles` | count | Stop monitor after N cycles (0 infinite) |
+| - | `--report-only` | - | Rebuild report artifacts only |
+| - | `--refresh-cache` | - | Force cache refresh for this run |
+| - | `--export` | format | Export artifacts: json/html/csv/all |
 | - | `--check-tools` | - | Verify tool installation |
 | - | `--health-check` | - | System diagnostics |
 | `-h` | `--help` | - | Show help message |
@@ -786,6 +883,3 @@ Run system health diagnostics.
 - **[Output Interpretation](../07-output/output.md)** - Understand your results
 
 ---
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026

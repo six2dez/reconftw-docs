@@ -147,7 +147,7 @@ Connects to discovered hosts and extracts TLS certificate SANs.
 
 **Ports checked:**
 ```bash
-TLS_PORTS="21,22,25,80,110,135,143,261,443,465,563,587,636,853,990,993,995,..."
+TLS_PORTS=$(cat "${SCRIPTPATH}/config/tls_ports.txt" 2>/dev/null | tr -d '\n')
 ```
 
 **What it finds:**

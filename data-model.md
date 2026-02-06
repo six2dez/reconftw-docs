@@ -37,16 +37,19 @@ subdomain.another.com
 - Blank lines ignored
 - Comments NOT supported
 
-### CIDR/IP Range (-m)
+### Multi-Target Label (-m)
 
 ```bash
-./reconftw.sh -m 192.168.1.0/24 -r
+./reconftw.sh -m client-name -l targets.txt -r
 ```
 
-Supported formats:
-- CIDR: `192.168.1.0/24`
-- Range: `192.168.1.1-255`
-- Single IP: `192.168.1.1`
+`-m` defines a logical multi-target name.  
+CIDR/IP targets are passed with `-d`:
+
+```bash
+./reconftw.sh -d 192.168.1.0/24 -r
+./reconftw.sh -d 192.168.1.10 -r
+```
 
 ### Scope Files
 
@@ -76,8 +79,10 @@ All results stored in `Recon/<domain>/`:
 Recon/example.com/
 ├── .called_fn/              # Checkpoint markers (hidden)
 ├── .log/                    # Execution logs (hidden)
-│   └── reconftw.log
+│   ├── YYYY-MM-DD_HH:MM:SS.txt
+│   └── perf_summary.json
 ├── .tmp/                    # Temporary files (hidden)
+├── .incremental/            # Incremental/monitor history
 │
 ├── subdomains/              # Subdomain enumeration results
 │   ├── subdomains.txt       # [KEY] Final merged subdomains
@@ -86,13 +91,14 @@ Recon/example.com/
 │   ├── subdomains_brute.txt
 │   ├── subdomains_permut.txt
 │   ├── subdomains_dnsrecords.txt  # DNS record details
-│   └── takeover.txt         # Subdomain takeover findings
+│   └── wildcards_detected.txt
 │
 ├── webs/                    # Web probing results
 │   ├── webs.txt             # [KEY] Live HTTP/HTTPS servers
 │   ├── webs_all.txt         # All probed URLs with metadata
 │   ├── webs_info.txt        # Detailed web info (title, status, tech)
-│   └── url_extract.txt      # Extracted URLs from crawling
+│   ├── url_extract.txt      # Extracted URLs from crawling
+│   └── takeover.txt         # Subdomain takeover findings
 │
 ├── hosts/                   # Host/IP information
 │   ├── ips.txt              # [KEY] Resolved IP addresses
@@ -108,9 +114,14 @@ Recon/example.com/
 │   ├── passwords.txt        # Leaked credentials
 │   └── metadata_results.txt # Document metadata
 │
-├── vulns/                   # Vulnerability findings
-│   ├── nuclei_output.txt    # Nuclei text output
-│   ├── nuclei_output.json   # [KEY] Nuclei JSON (parseable)
+├── nuclei_output/           # Nuclei findings (severity-split)
+│   ├── info.txt / info_json.txt
+│   ├── low.txt / low_json.txt
+│   ├── medium.txt / medium_json.txt
+│   ├── high.txt / high_json.txt
+│   └── critical.txt / critical_json.txt
+│
+├── vulns/                   # Additional vulnerability findings
 │   ├── xss.txt              # XSS vulnerabilities
 │   ├── sqli.txt             # SQL injection
 │   ├── cors.txt             # CORS misconfigs
@@ -128,7 +139,19 @@ Recon/example.com/
 ├── fuzzing/                 # Directory fuzzing
 │   └── fuzzing_full.txt     # Discovered paths
 │
-└── hotlist.txt              # [KEY] Priority findings (risk-scored)
+├── hotlist.txt              # [KEY] Priority findings (risk-scored)
+│
+└── report/                  # Consolidated reporting/export
+    ├── report.json
+    ├── index.html
+    ├── latest/report.json
+    ├── latest/index.html
+    ├── findings_normalized.jsonl
+    ├── export_all.jsonl
+    ├── subdomains.csv
+    ├── webs.csv
+    ├── hosts.csv
+    └── findings.csv
 ```
 
 ---
@@ -188,7 +211,7 @@ All resolved IP addresses (CDN filtered).
 93.184.216.35
 ```
 
-### vulns/nuclei_output.json
+### nuclei_output/*_json.txt
 
 Machine-readable vulnerability data.
 
@@ -207,13 +230,15 @@ Machine-readable vulnerability data.
 **Useful jq queries:**
 ```bash
 # Get critical vulns
-cat nuclei_output.json | jq -r 'select(.severity=="critical")'
+cat nuclei_output/critical_json.txt | jq -r '.'
 
 # List unique templates triggered
-cat nuclei_output.json | jq -r '."template-id"' | sort -u
+cat nuclei_output/*_json.txt | jq -r '."template-id"' | sort -u
 
 # Count by severity
-cat nuclei_output.json | jq -r '.severity' | sort | uniq -c
+for s in info low medium high critical; do \
+  printf "%s: " "$s"; wc -l < "nuclei_output/${s}_json.txt" 2>/dev/null || echo 0; \
+done
 ```
 
 ### hotlist.txt
@@ -233,12 +258,13 @@ Risk-scored priority findings.
 | Module | Primary Input | Key Outputs |
 |--------|---------------|-------------|
 | **OSINT** | Domain | `osint/emails.txt`, `osint/github_*.json`, `osint/dorks.txt` |
-| **Subdomains** | Domain | `subdomains/subdomains.txt`, `subdomains/takeover.txt` |
+| **Subdomains** | Domain | `subdomains/subdomains.txt`, `subdomains/subdomains_dnsrecords.txt` |
 | **Web Probing** | Subdomains | `webs/webs.txt`, `webs/webs_all.txt` |
 | **URL Collection** | Live webs | `webs/url_extract.txt`, `js/js_endpoints.txt` |
 | **Fuzzing** | Live webs | `fuzzing/fuzzing_full.txt` |
 | **Ports** | IPs | `hosts/portscan_active.txt`, `hosts/portscan_active.xml` |
-| **Vulns** | URLs | `vulns/nuclei_output.json`, `vulns/*.txt` |
+| **Vulns** | URLs | `nuclei_output/*_json.txt`, `vulns/*.txt` |
+| **Reporting** | All module outputs | `report/report.json`, `report/index.html`, `report/*.csv` |
 
 ---
 
@@ -365,7 +391,7 @@ If interrupted, reconFTW skips completed functions:
 
 ```bash
 # Delete specific checkpoint
-rm Recon/example.com/.called_fn/nuclei_check
+rm Recon/example.com/.called_fn/.nuclei_check
 
 # Delete all checkpoints (full re-scan)
 rm -rf Recon/example.com/.called_fn/
@@ -377,7 +403,7 @@ rm -rf Recon/example.com/.called_fn/
 
 ### Main Log
 
-`Recon/<domain>/.log/reconftw.log`
+`Recon/<domain>/.log/YYYY-MM-DD_HH:MM:SS.txt`
 
 ```
 [2024-01-15 10:30:00] [INFO] Starting reconnaissance for example.com
@@ -431,7 +457,7 @@ Automatic import when configured:
 
 ```bash
 # Export to CSV
-cat vulns/nuclei_output.json | jq -r '[.host, .severity, ."template-id"] | @csv'
+cat nuclei_output/*_json.txt | jq -r '[.host, .severity, ."template-id"] | @csv'
 
 # Export subdomains for other tools
 cat subdomains/subdomains.txt | httpx -silent > live.txt
@@ -444,7 +470,7 @@ cat subdomains/subdomains.txt | httpx -silent > live.txt
 ### Find All Critical Vulns
 
 ```bash
-cat Recon/*/vulns/nuclei_output.json | jq -r 'select(.severity=="critical")'
+cat Recon/*/nuclei_output/critical_json.txt | jq -r '.'
 ```
 
 ### Merge Results from Multiple Scans
@@ -454,7 +480,7 @@ cat Recon/*/vulns/nuclei_output.json | jq -r 'select(.severity=="critical")'
 cat Recon/*/subdomains/subdomains.txt | sort -u > all_subs.txt
 
 # Merge vulnerabilities
-cat Recon/*/vulns/nuclei_output.json > all_vulns.json
+cat Recon/*/nuclei_output/*_json.txt > all_vulns.json
 ```
 
 ### Generate Statistics
@@ -466,7 +492,7 @@ for d in Recon/*/; do
 done
 
 # Vulnerability summary
-cat Recon/*/vulns/nuclei_output.json | jq -r '.severity' | sort | uniq -c
+cat Recon/*/nuclei_output/*_json.txt | jq -r '.severity' | sort | uniq -c
 ```
 
 ---
@@ -494,6 +520,3 @@ rm -rf Recon/example.com/.tmp/
 ```
 
 ---
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026

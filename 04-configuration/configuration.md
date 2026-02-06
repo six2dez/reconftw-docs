@@ -1,7 +1,5 @@
 # Configuration Reference
 
-> **Documentation for reconFTW `dev` branch** | Variables match `reconftw.cfg`
-
 This guide provides a complete reference for reconFTW's configuration file (`reconftw.cfg`), covering every option with detailed explanations.
 
 ---
@@ -21,6 +19,35 @@ reconFTW uses several configuration files:
 1. `reconftw.cfg` is loaded first (defaults)
 2. `secrets.cfg` is sourced if it exists (API keys)
 3. Custom config via `-f` flag overrides all
+
+### CLI Overrides Precedence
+
+Some runtime flags are intentionally re-applied after config load, so command-line intent wins over defaults:
+
+- `--monitor`
+- `--monitor-interval`
+- `--monitor-cycles`
+- `--refresh-cache`
+- `--export`
+- `--report-only`
+
+This means you can keep conservative defaults in `reconftw.cfg` and enable these workflows ad-hoc per run.
+
+### Bundled Config Profiles
+
+The repository includes ready-to-use profile templates under `config/`:
+
+| File | Goal |
+|------|------|
+| `config/reconftw_quick.cfg` | Faster, lighter scans |
+| `config/reconftw_full.cfg` | Broad and thorough coverage |
+| `config/reconftw_stealth.cfg` | Lower-noise posture |
+
+Use them with:
+
+```bash
+./reconftw.sh -d example.com -r -f config/reconftw_quick.cfg
+```
 
 ---
 
@@ -304,8 +331,9 @@ GOTATOR_FLAGS=" -depth 1 -numbers 3 -mindup -adv -md"
 ### TLS Port Discovery
 
 ```bash
-# Ports to check for TLS certificates
-TLS_PORTS="21,22,25,80,110,135,143,261,443,465,563,587,636,853,990,993,995,..."
+# Ports to check for TLS certificates are loaded from:
+# config/tls_ports.txt
+TLS_PORTS=$(cat "${SCRIPTPATH}/config/tls_ports.txt" 2>/dev/null | tr -d '\n')
 ```
 
 ### Web Detection Module
@@ -317,7 +345,7 @@ WEBSCREENSHOT=true           # Capture screenshots
 VIRTUALHOSTS=false           # Virtual host fuzzing (slower)
 
 # Uncommon web ports to probe
-UNCOMMON_PORTS_WEB="81,300,591,593,832,981,1010,1311,..."
+UNCOMMON_PORTS_WEB=$(cat "${SCRIPTPATH}/config/uncommon_ports_web.txt" 2>/dev/null | tr -d '\n')
 ```
 
 ### Host Module
@@ -574,6 +602,11 @@ SENDZIPNOTIFY=false                  # Send zipped results via notify
 ```bash
 DIFF=false                           # Differential scanning
 INCREMENTAL_MODE=false               # Incremental scanning
+MONITOR_MODE=false                   # Continuous monitoring mode
+MONITOR_INTERVAL_MIN=60              # Minutes between monitor cycles
+MONITOR_MAX_CYCLES=0                 # 0 = infinite loop
+ALERT_SUPPRESSION=true               # Suppress repeated alerts by fingerprint
+ALERT_SEEN_FILE=".incremental/alerts_seen.hashes"
 ```
 
 ### Cleanup Settings
@@ -588,6 +621,10 @@ PRESERVE=true                        # Keep .called_fn markers
 
 ```bash
 CACHE_MAX_AGE_DAYS=30                # Cache validity (days)
+CACHE_MAX_AGE_DAYS_RESOLVERS=7       # Resolver cache TTL
+CACHE_MAX_AGE_DAYS_WORDLISTS=30      # Wordlist cache TTL
+CACHE_MAX_AGE_DAYS_TOOLS=14          # Tool metadata cache TTL
+CACHE_REFRESH=false                  # Force refresh cache this run
 ```
 
 ### Log Rotation
@@ -610,7 +647,18 @@ ASSET_STORE=true                     # Append to assets.jsonl
 QUICK_RESCAN=false                   # Skip heavy steps if no new assets
 CHUNK_LIMIT=2000                     # Split large lists
 HOTLIST_TOP=50                       # Top risky assets to highlight
+EXPORT_FORMAT=""                     # Optional exporter: json|html|csv|all
+REPORT_ONLY=false                    # Rebuild reports from existing artifacts
 ```
+
+### Performance Profiles
+
+```bash
+PERF_PROFILE="balanced"              # low|balanced|max auto-tuning
+```
+
+`PERF_PROFILE` automatically adjusts thread/job settings from available CPU and memory.  
+Use `low` for constrained hosts, `balanced` for normal runs, and `max` for dedicated scanning boxes.
 
 ### IPv6
 
@@ -750,7 +798,3 @@ export NUCLEI_RATELIMIT=50
 - **[Advanced Usage](../10-advanced/advanced.md)** - Custom functions and optimization
 
 ---
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026  
-> Variables documented match `reconftw.cfg` in the repository root.

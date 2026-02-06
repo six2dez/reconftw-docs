@@ -26,13 +26,15 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🔄 **Automated Workflow** | Complete reconnaissance pipeline with a single command |
-| 🧩 **Modular Design** | Enable/disable any module or function as needed |
+| **Automated Workflow** | Complete reconnaissance pipeline with a single command |
+| **Modular Design** | Enable/disable any module or function as needed |
 | **Distributed Scanning** | Scale with [Axiom](08-integrations/axiom.md) across cloud infrastructure |
 | **Structured Output** | Organized results with multiple export formats |
-| 🔧 **Highly Configurable** | 300+ configuration options for fine-tuning |
-| 🔄 **Incremental Scans** | Only scan new findings since last run |
-| 🤖 **AI Integration** | Generate executive reports with local AI models |
+| **Continuous Monitoring** | Recurrent scan cycles with delta and alert snapshots |
+| **Report Rebuild Mode** | Recreate report/export artifacts from existing scan data |
+| **Highly Configurable** | 300+ configuration options for fine-tuning |
+| **Incremental Scans** | Only scan new findings since last run |
+| **AI Integration** | Generate executive reports with local AI models |
 
 ### What Can reconFTW Do?
 
@@ -114,10 +116,11 @@ This documentation is organized to help you get the most out of reconFTW:
 13. **[Case Studies](case-studies.md)** - Real-world usage examples
 14. **[Advanced Usage](10-advanced/advanced.md)** - Custom functions and optimization
 15. **[Troubleshooting](11-troubleshooting/troubleshooting.md)** - Common issues and solutions
+16. **[Release Gate](release-gate.md)** - Required checks before publishing updates
 
 ### ⚖️ Legal & Security
 
-16. **[OPSEC & Legal](opsec-legal.md)** - Stay safe and authorized
+17. **[OPSEC & Legal](opsec-legal.md)** - Stay safe and authorized
 
 ---
 
@@ -133,6 +136,17 @@ This documentation is organized to help you get the most out of reconFTW:
 | **OSINT** | `-n` | OSINT gathering only | Intelligence gathering |
 | **Custom** | `-c` | Run custom function | Advanced workflows |
 | **Zen** | `-z` | Minimal output mode | Clean terminal output |
+
+Additional workflow flags:
+- `--monitor`, `--monitor-interval`, `--monitor-cycles`
+- `--report-only`
+- `--export json|html|csv|all`
+- `--refresh-cache`
+
+Bundled config profiles:
+- `config/reconftw_quick.cfg`
+- `config/reconftw_full.cfg`
+- `config/reconftw_stealth.cfg`
 
 ---
 

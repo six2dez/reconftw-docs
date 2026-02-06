@@ -71,7 +71,7 @@
   * [Cloud Enumeration](05-modules/osint.md#cloud-enumeration)
 
 * [Subdomain Module](05-modules/subdomains.md)
-  * [New Features (v3.x)](05-modules/subdomains.md#new-features-v3x)
+  * [Highlights](05-modules/subdomains.md#highlights)
   * [Passive Enumeration](05-modules/subdomains.md#passive-enumeration)
   * [Certificate Transparency](05-modules/subdomains.md#certificate-transparency)
   * [DNS Bruteforce](05-modules/subdomains.md#dns-bruteforce)
@@ -122,7 +122,8 @@
 ## Output
 
 * [Output Interpretation](07-output/output.md)
-  * [Directory Structure](07-output/output.md#directory-structure)
+  * [Directory Structure](07-output/output.md#output-directory-structure)
+  * [Reporting and Monitor Artifacts](07-output/output.md#reporting-and-monitor-artifacts)
   * [Subdomain Files](07-output/output.md#subdomain-files)
   * [Web Files](07-output/output.md#web-files)
   * [Host Files](07-output/output.md#host-files)
@@ -173,6 +174,10 @@
   * [Rate Limiting Strategies](tuning.md#rate-limiting-strategies)
   * [Parallelization](tuning.md#parallelization)
   * [Axiom Scaling](tuning.md#axiom-scaling)
+  * [Auto-Tuning with PERF_PROFILE](tuning.md)
+  * [Cache and Refresh Strategy](tuning.md#cache-and-refresh-strategy)
+
+* [Release Gate](release-gate.md)
 
 * [Data Model & I/O](data-model.md)
   * [Input Formats](data-model.md#input-formats)

@@ -73,7 +73,7 @@ GOTATOR_FLAGS=" -depth 1 -numbers 3 -mindup -adv -md"
 
 ---
 
-## New Features (v3.x)
+## Highlights
 
 ### Time Fencing (`DNS_TIME_FENCE_DAYS`)
 
@@ -339,7 +339,8 @@ IP addresses → Connect to TLS ports →
 
 **Ports Checked:**
 ```bash
-TLS_PORTS="21,22,25,80,110,443,465,587,636,993,995,8443,..."
+# Loaded from config/tls_ports.txt
+TLS_PORTS=$(cat "${SCRIPTPATH}/config/tls_ports.txt" 2>/dev/null | tr -d '\n')
 ```
 
 **Output:**

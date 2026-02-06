@@ -23,9 +23,81 @@ Recon/
     ├── .tmp/                 # Temporary files
     ├── .log/                 # Execution logs
     ├── .called_fn/           # Checkpoint markers
+    ├── .incremental/         # Incremental + monitor history
+    │   └── history/
     ├── assets.jsonl          # Automation-friendly asset list
-    └── hotlist.txt           # Risk-scored findings
+    ├── hotlist.txt           # Risk-scored findings
+    └── report/               # Consolidated reports and exports
+        ├── report.json
+        ├── index.html
+        ├── latest/
+        │   ├── report.json
+        │   └── index.html
+        ├── findings_normalized.jsonl
+        ├── export_all.jsonl
+        ├── subdomains.csv
+        ├── webs.csv
+        ├── hosts.csv
+        └── findings.csv
 ```
+
+---
+
+## Reporting and Monitor Artifacts
+
+### report/report.json
+
+Machine-readable consolidated report generated at the end of scans and in `--report-only` mode.
+
+Key sections:
+- `summary` (subdomains, webs, hosts, findings, screenshots)
+- `severities` (info/low/medium/high/critical counts)
+- `top_assets` (from `hotlist.txt`)
+- `links` (quick paths to important artifacts)
+- `delta_since_last` and `alerts_last` (when monitor/incremental history exists)
+
+### report/index.html
+
+Self-contained HTML dashboard with:
+- KPI cards
+- Severity pills
+- Top assets table
+- Delta since last run
+- Timeline
+- Quick links
+
+### report/latest/
+
+Stable pointers for automation/UI:
+- `report/latest/report.json`
+- `report/latest/index.html`
+
+These are always copied from the latest generated report.
+
+### .incremental/history/<timestamp>/
+
+Per-cycle snapshots used by incremental and monitor workflows.
+
+Common files:
+- `subdomains.txt`
+- `webs.txt`
+- `high_findings.txt`
+- `critical_findings.txt`
+- `delta.json`
+- `alerts.json`
+
+`delta.json` tracks new assets/findings since the previous cycle.  
+`alerts.json` stores the alert summary emitted for that cycle (with optional dedup via fingerprint suppression).
+
+### .log/perf_summary.json
+
+Machine-readable performance summary with:
+- `total_duration_sec`
+- asset/finding counts
+- top slowest functions
+- active `perf_profile`
+
+Useful for regression checks and CI release gates.
 
 ---
 

@@ -285,10 +285,41 @@ RESOLVER_ROTATE_INTERVAL=100  # Rotate every 100 queries
 
 ```bash
 # In reconftw.cfg
-INCREMENTAL=true
-DIFF_ONLY=true           # Process only differences
-DIFF_NOTIFY=true         # Notify on new findings
+INCREMENTAL_MODE=false     # Enable with --incremental
+QUICK_RESCAN=false         # Skip heavy stages when nothing new
+MONITOR_MODE=false         # Enable with --monitor
+MONITOR_INTERVAL_MIN=60
+MONITOR_MAX_CYCLES=0       # 0 = infinite
+ALERT_SUPPRESSION=true
+ALERT_SEEN_FILE=".incremental/alerts_seen.hashes"
 ```
+
+---
+
+## Continuous Monitoring and Reporting
+
+### Monitor Workflows
+
+```bash
+# Continuous recon every 30 minutes (48 cycles)
+./reconftw.sh -d example.com -r --monitor --monitor-interval 30 --monitor-cycles 48
+
+# Continuous web mode from URL list
+./reconftw.sh -d example.com -l urls.txt -w --monitor --monitor-interval 60
+```
+
+### Report Rebuild and Export
+
+```bash
+# Rebuild report artifacts without rescanning
+./reconftw.sh -d example.com --report-only --export all
+```
+
+Generated artifacts are stored under `Recon/<target>/report/`:
+- `report.json`, `index.html`
+- `latest/report.json`, `latest/index.html`
+- `findings_normalized.jsonl`, `export_all.jsonl`
+- `subdomains.csv`, `webs.csv`, `hosts.csv`, `findings.csv`
 
 ---
 
@@ -302,10 +333,10 @@ Recon/example.com/.called_fn/
 
 # Each completed function creates a marker
 .called_fn/
-├── sub_passive
-├── sub_crt
-├── webprobe_simple
-└── nuclei_check
+├── .sub_passive
+├── .sub_crt
+├── .webprobe_simple
+└── .nuclei_check
 ```
 
 ### Resuming Interrupted Scans
@@ -326,15 +357,15 @@ Recon/example.com/.called_fn/
 rm -rf Recon/example.com/.called_fn/
 
 # Reset specific function
-rm Recon/example.com/.called_fn/nuclei_check
+rm Recon/example.com/.called_fn/.nuclei_check
 ```
 
 ### Checkpoint Configuration
 
 ```bash
-# In reconftw.cfg
-USE_CHECKPOINT=true      # Enable checkpoint system
-CHECKPOINT_DIR=".called_fn"
+# Checkpoint and diff controls
+DIFF=false
+INCREMENTAL_MODE=false
 ```
 
 ---
@@ -651,10 +682,10 @@ DEBUG=true
 
 ```bash
 # Check execution log
-tail -f Recon/example.com/.log/reconftw.log
+tail -f "$(ls -1t Recon/example.com/.log/*.txt | head -n1)"
 
 # Check errors
-grep -i error Recon/example.com/.log/*.log
+grep -i error Recon/example.com/.log/*.txt
 ```
 
 ---

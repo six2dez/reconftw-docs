@@ -378,8 +378,3 @@ hostnamectl set-hostname scanner-01
 4. **Scan from VPS**, not personal IP
 5. **Report responsibly**, don't overstep
 6. **When in doubt, ask** - it's better to ask than apologize
-
----
-
-> **Documentation Info**  
-> Branch: `dev` | Version: `v3.0.0+` | Last updated: February 2026
