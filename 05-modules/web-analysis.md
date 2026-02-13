@@ -30,9 +30,10 @@ Before scanning for vulnerabilities, you need to understand what you're scanning
 |----------|---------|-------|
 | `webprobe_simple` | Probe ports 80/443 | httpx |
 | `webprobe_full` | Probe uncommon web ports | httpx |
+| `favirecon_tech` | Favicon-based technology recon | favirecon |
 | `screenshot` | Capture web screenshots | nuclei |
 | `virtualhosts` | Virtual host discovery | VhostFinder |
-| `urlchecks` | URL collection (passive + active) | urlfinder, katana, JSA |
+| `urlchecks` | URL collection (passive + active) | urlfinder, waymore, katana, JSA |
 | `url_gf` | URL pattern classification | gf, urless |
 | `url_ext` | File extension sorting | custom |
 | `jschecks` | JavaScript analysis | subjs, xnLinkFinder, mantra, jsluice |
@@ -57,6 +58,11 @@ Before scanning for vulnerabilities, you need to understand what you're scanning
 # Web probing
 WEBPROBESIMPLE=true            # Probe 80/443
 WEBPROBEFULL=true              # Probe uncommon ports
+FAVIRECON=true                 # Favicon-based technology recon
+FAVIRECON_CONCURRENCY=50
+FAVIRECON_TIMEOUT=10
+FAVIRECON_RATE_LIMIT=0
+FAVIRECON_PROXY=""
 WEBSCREENSHOT=true             # Screenshots
 VIRTUALHOSTS=false             # Virtual host fuzzing
 
@@ -64,6 +70,8 @@ VIRTUALHOSTS=false             # Virtual host fuzzing
 URL_CHECK=true                 # URL collection
 URL_CHECK_PASSIVE=true         # Passive URL sources
 URL_CHECK_ACTIVE=true          # Active crawling
+WAYMORE_TIMEOUT=30m            # Timeout for waymore passive collection
+WAYMORE_LIMIT=5000             # Optional waymore URL collection limit
 URL_GF=true                    # Pattern matching
 URL_EXT=true                   # Extension sorting
 
@@ -121,10 +129,10 @@ Subdomains → httpx (80, 443) → Filter responses →
 **Output:**
 ```
 webs/webs.txt              # Live web servers
-webs/webs_info.txt         # Detailed probe results
+webs/web_full_info_plain.txt         # Detailed probe results
 ```
 
-**Sample Output (webs_info.txt):**
+**Sample Output (web_full_info_plain.txt):**
 ```
 https://www.example.com [200] [Example Site] [nginx] [PHP,WordPress]
 https://api.example.com [401] [API Gateway] [cloudflare]
@@ -169,6 +177,34 @@ WEBPROBEFULL=true
 HTTPX_UNCOMMONPORTS_THREADS=100
 HTTPX_UNCOMMONPORTS_TIMEOUT=10
 UNCOMMON_PORTS_WEB=$(cat "${SCRIPTPATH}/config/uncommon_ports_web.txt" 2>/dev/null | tr -d '\n')
+```
+
+---
+
+### `favirecon_tech` - Favicon Technology Recon
+
+Runs `favirecon` against discovered web targets to fingerprint technologies from favicon hashes.
+
+**How It Works:**
+
+```
+webs/webs_all.txt → favirecon (JSON + summary) →
+→ Normalize findings → webs/favirecon.txt
+```
+
+**Output:**
+```
+webs/favirecon.json
+webs/favirecon.txt
+```
+
+**Configuration:**
+```bash
+FAVIRECON=true
+FAVIRECON_CONCURRENCY=50
+FAVIRECON_TIMEOUT=10
+FAVIRECON_RATE_LIMIT=0
+FAVIRECON_PROXY=""
 ```
 
 ---
@@ -261,6 +297,7 @@ Collects URLs from multiple sources for full coverage.
 - Common Crawl
 - AlienVault OTX
 - URLScan.io
+- Additional passive sources via waymore
 
 **Active Sources:**
 - Katana web crawler
@@ -277,8 +314,8 @@ Collects URLs from multiple sources for full coverage.
           ┌─────────────────┼─────────────────┐
           ▼                 ▼                 ▼
     ┌──────────┐     ┌──────────┐     ┌──────────┐
-    │ urlfinder│     │  katana  │     │   JSA    │
-    │ (passive)│     │ (active) │     │ (JS URLs)│
+    │ urlfinder│     │ waymore  │     │  katana  │
+    │ (passive)│     │ (passive)│     │ (active) │
     └────┬─────┘     └────┬─────┘     └────┬─────┘
          │                │                │
          └────────────────┼────────────────┘
@@ -303,6 +340,8 @@ webs/url_extract_comb.txt   # Combined and cleaned
 URL_CHECK=true
 URL_CHECK_PASSIVE=true
 URL_CHECK_ACTIVE=true
+WAYMORE_TIMEOUT=30m
+WAYMORE_LIMIT=5000
 KATANA_THREADS=20
 ```
 
@@ -765,7 +804,7 @@ GRPC_SCAN=false    # Disabled by default (requires grpcurl)
 | File | Content |
 |------|---------|
 | `webs/webs.txt` | Live web servers |
-| `webs/webs_info.txt` | Detailed probe results |
+| `webs/web_full_info_plain.txt` | Detailed probe results |
 | `webs/url_extract.txt` | All discovered URLs |
 | `screenshots/` | Web screenshots |
 | `gf/*.txt` | Pattern-classified URLs |

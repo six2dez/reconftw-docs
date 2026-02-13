@@ -221,7 +221,7 @@ http://dev.example.com:8080 [403] [Forbidden] [Apache]
 
 **Content:** All discovered URLs from crawling and archives.
 
-**Sources:** gau, waybackurls, katana, hakrawler
+**Sources:** urlfinder, waymore, katana, github-endpoints
 
 ```
 https://example.com/login
@@ -229,6 +229,24 @@ https://example.com/api/v1/users
 https://example.com/admin/dashboard
 https://example.com/uploads/document.pdf
 https://example.com/search?q=test
+```
+
+---
+
+### favirecon.json / favirecon.txt
+
+**Content:** Technology fingerprints inferred from favicon hashes.
+
+**Source:** `favirecon_tech` (favirecon)
+
+**Files:**
+- `webs/favirecon.json` (raw JSON)
+- `webs/favirecon.txt` (normalized summary)
+
+**Sample (`favirecon.txt`):**
+```
+https://app.example.com [nginx] [123456789]
+https://portal.example.com [WordPress] [987654321]
 ```
 
 ---
@@ -486,25 +504,23 @@ File: presentation.pptx
 
 ---
 
-### apileaks.txt
+### postman_leaks.txt / swagger_leaks.txt
 
-**Content:** API endpoints from Postman/Swagger leaks.
+**Content:** API endpoints and collection/spec references discovered in public Postman/Swagger sources.
 
-```
-[Postman Collection: example-api]
-POST /api/v1/users
-GET /api/v1/orders
-DELETE /api/v1/sessions
+**Files:**
+- `osint/postman_leaks.txt`
+- `osint/swagger_leaks.txt`
 
-[Swagger: api.example.com]
-/api/auth/login
-/api/users/{id}
-/api/admin/settings
-```
+### postman_leaks_postleaksng/
+
+**Content:** Raw JSON artifacts produced by `postleaksNg`.
+
+**Use Case:** Deep triage and enrichment before/after `trufflehog` secret scanning.
 
 ---
 
-### domain_info.txt
+### domain_info_general.txt
 
 **Content:** WHOIS and domain intelligence.
 
@@ -523,7 +539,7 @@ Nameservers:
 
 ---
 
-### spf_dmarc.txt
+### mail_hygiene.txt
 
 **Content:** Email security analysis.
 
@@ -550,7 +566,7 @@ Email Spoofing: PROTECTED (moderate)
 **Content:** Nuclei scan results in JSON format.
 
 **Files:**
-- `nuclei_critical.json`
+- `critical_json.txt`
 - `nuclei_high.json`
 - `nuclei_medium.json`
 - `nuclei_low.json`
@@ -662,6 +678,35 @@ Email Spoofing: PROTECTED (moderate)
 
 ---
 
+### ssti.txt / ssti_tinja.txt
+
+**Content:** Server-side template injection findings.
+
+**Files:**
+- `vulns/ssti.txt` (primary SSTI artifact)
+- `vulns/ssti_tinja.txt` (normalized findings when TInjA is used)
+
+---
+
+### webcache.txt / webcache_toxicache.txt
+
+**Content:** Web cache poisoning findings.
+
+**Files:**
+- `vulns/webcache.txt` (Web-Cache-Vulnerability-Scanner output)
+- `vulns/webcache_toxicache.txt` (toxicache output)
+
+---
+
+### brokenLinks.txt
+
+**Content:** Broken link/takeover candidates from `second-order` (or legacy katana mode).
+
+**File:**
+- `vulns/brokenLinks.txt`
+
+---
+
 ### testssl.txt
 
 **Content:** SSL/TLS analysis results.
@@ -770,41 +815,55 @@ https://cdn.example.com/lib/jquery-3.6.0.min.js
 - `https_api.example.com.png`
 - `http_dev.example.com_8080.png`
 
-**Gallery View:** Use gowitness report for HTML gallery.
-
-```bash
-# Generate HTML report
-gowitness report serve
-```
+Screenshots are generated through nuclei headless templates in the `screenshot` module.
 
 ---
 
 ## Log Files (`.log/`)
 
-### reconftw.log
+### Per-Run Log Files
 
-**Content:** Main execution log.
+**Content:** Main execution logs per run.
 
 ```
-[2023-06-15 10:00:00] Starting reconnaissance for example.com
-[2023-06-15 10:00:01] Running sub_passive...
-[2023-06-15 10:05:30] sub_passive completed: 150 subdomains
-[2023-06-15 10:05:31] Running sub_crt...
+Recon/example.com/.log/2026-02-12_15:24:44.txt
+Recon/example.com/.log/perf_summary.json
 ```
 
 ---
 
-### errors.log
+### debug.log
 
-**Content:** Error messages during execution.
+**Content:** Consolidated debug stream used for troubleshooting.
 
 ```
-[ERROR] subfinder: API rate limit exceeded for VirusTotal
-[ERROR] httpx: Connection timeout for staging.example.com
-[WARN] nuclei: Template cve-2021-1234 deprecated
+[2026-02-12 15:31:03] NOTE @ apileaks:213 :: porch-pirate --dump failed; retrying without --dump
+[2026-02-12 15:31:21] NOTE @ apileaks:264 :: apileaks: postleaksNg failed
+[2026-02-12 15:33:17] NOTE @ favicon:374 :: favicon: fav-up failed or timed out; skipping
+[2026-02-12 15:41:08] NOTE @ favirecon_tech:455 :: favirecon_tech: favirecon command failed
+[2026-02-12 15:53:09] WARN @ sub_asn :: PDCP_API_KEY not set, ASN enumeration skipped
 ```
 
 ---
+
+### Terminal Status Model
+
+During execution, status lines follow normalized badges:
+- `OK`: Function completed successfully.
+- `WARN`: Function completed with non-fatal issue.
+- `FAIL`: Function failed.
+- `SKIP`: Function intentionally skipped.
+- `CACHE`: Function already processed and reused.
+
+In parallel mode, progress snapshots summarize batch execution:
+
+```
+Progress: 3/5 (60%) | elapsed 42s | ETA ~28s
+Active: sub_active 24s, sub_dns 12s
+Queue: 2 pending
+```
+
+In clean parallel UI mode, `Queue:` is suppressed when pending count is `0`.
 
 ## Checkpoint Files (`.called_fn/`)
 
@@ -922,7 +981,7 @@ gowitness report serve
 ### Manual Report Creation
 
 1. Collect key findings from:
-   - `vulns/nuclei_output/`
+   - `nuclei_output/`
    - `webs/takeover.txt`
    - `osint/github_company_secrets.json`
 
@@ -938,7 +997,7 @@ gowitness report serve
 
 ```bash
 # Convert JSON to CSV
-cat nuclei_output/*.json | jq -r '[.host, .["template-id"], .info.severity] | @csv'
+cat nuclei_output/*_json.txt | jq -r '[.host, .["template-id"], .info.severity] | @csv'
 ```
 
 ### Export to Faraday

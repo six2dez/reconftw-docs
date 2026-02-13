@@ -17,7 +17,7 @@ The subdomain enumeration module is the cornerstone of reconFTW, discovering all
 | `sub_regex_permut` | Active | Regex-based permutations | regulator |
 | `sub_recursive_passive` | Passive | Recursive passive enum | subfinder |
 | `sub_recursive_brute` | Active | Recursive bruteforce | puredns |
-| `sub_scraping` | Semi-active | Web scraping extraction | katana |
+| `sub_scraping` | Semi-active | Subdomain extraction from passive URLs and live web data | urlfinder, waymore, httpx, csprecon |
 | `sub_analytics` | Passive | Google Analytics correlation | AnalyticsRelationships |
 | `sub_tls` | Active | TLS certificate discovery | tlsx |
 | `sub_dns` | Active | DNS record resolution | dnsx |
@@ -296,22 +296,22 @@ SUBNOERROR=false  # Disabled by default (can be slow)
 
 ---
 
-### `sub_scraping` - Web Scraping
+### `sub_scraping` - URL-Based Subdomain Discovery
 
-Extracts subdomains from web pages, JavaScript files, and crawled content.
+Extracts subdomains from passive URL datasets and live web metadata.
 
 **How It Works:**
 
 ```
-Known web servers → katana (crawl) → 
-→ Extract URLs → Parse for subdomains → Output
+Target domain → urlfinder + waymore (passive URLs) →
+Known web servers → httpx + csprecon →
+Extract domains from collected URLs → Resolve and validate → Output
 ```
 
 **What It Finds:**
-- Links in HTML
-- API endpoints in JavaScript
-- References in source maps
-- Hardcoded URLs
+- Historical URLs from passive sources
+- Subdomains referenced in discovered URLs
+- CSP-hosted domains discovered from live endpoints
 
 **Output:**
 ```
@@ -321,7 +321,8 @@ subdomains/subdomains_scraping.txt
 **Configuration:**
 ```bash
 SUBSCRAPING=true
-KATANA_THREADS=20
+WAYMORE_TIMEOUT=30m
+WAYMORE_LIMIT=5000
 ```
 
 ---

@@ -159,7 +159,7 @@ Recon/example.com/
 ├── osint/
 │   └── emails.txt        ← Found email addresses
 └── .log/
-    └── reconftw.log      ← Execution log
+    └── YYYY-MM-DD_HH:MM:SS.txt  ← Execution log (per run)
 ```
 
 ### Quick Results Check

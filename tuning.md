@@ -227,6 +227,7 @@ High-memory tools:
 - `nuclei` - Keep under 200 ratelimit on low-memory systems
 - `ffuf` - Reduce threads on large wordlists
 - `katana` - Can be memory-intensive on large sites
+- `second-order` - Lower `SECOND_ORDER_THREADS` on constrained hosts
 
 ```bash
 # Low memory system (2GB)
@@ -505,15 +506,26 @@ Phase 5: Recursive (sequential) - depends on all previous
 ### Configuration Variables
 
 ```bash
-# Maximum parallel jobs (default: 4)
+# Global toggle and concurrency ceiling
+PARALLEL_MODE=true
 PARALLEL_MAX_JOBS=4
 
-# Parallel batch size for large operations
-PARALLEL_BATCH_SIZE=10
+# Output/replay mode for per-job logs
+PARALLEL_LOG_MODE="summary"   # summary | tail | full
+PARALLEL_TAIL_LINES=20
 
-# Enable/disable parallelization globally
-PARALLEL_ENABLED=true
+# Live progress refresh and presentation
+PARALLEL_HEARTBEAT_SECONDS=20
+PARALLEL_UI_MODE="clean"      # clean | balanced | trace
+PARALLEL_PROGRESS_SHOW_ETA=true   # ETA appears only when estimate is stable
+PARALLEL_PROGRESS_SHOW_ACTIVE=true
+PARALLEL_PROGRESS_COMPACT_ACTIVE_MAX=4
 ```
+
+`PARALLEL_UI_MODE` guidelines:
+- `clean`: default; single live progress line in TTY with minimal noise.
+- `balanced`: adds selective process-level details for slow/problematic tasks.
+- `trace`: full process trace (`Started/Finished`, PID/rc) for debugging.
 
 ### Performance Impact
 
@@ -525,15 +537,18 @@ PARALLEL_ENABLED=true
 
 ### Parallel Functions Reference
 
-| Function | Purpose | Max Jobs |
+| Function | Purpose | Group Size Variable |
 |----------|---------|----------|
-| `parallel_passive_enum()` | Run passive sources in parallel | 4 |
-| `parallel_active_enum()` | Run active DNS checks in parallel | 3 |
-| `parallel_postactive_enum()` | TLS and analytics after resolution | 2 |
-| `parallel_brute_enum()` | Brute force (resource limited) | 2 |
-| `parallel_web_vulns()` | Web vulnerability checks | 4 |
-| `parallel_injection_vulns()` | Injection testing | 4 |
-| `parallel_osint()` | OSINT gathering | 4 |
+| Sub passive phase | `sub_passive`, `sub_crt` | `PAR_SUB_PASSIVE_GROUP_SIZE` |
+| Sub dependent active | `sub_noerror`, `sub_dns` | `PAR_SUB_DEP_ACTIVE_GROUP_SIZE` |
+| Sub post-active | `sub_tls`, `sub_analytics` | `PAR_SUB_POST_ACTIVE_GROUP_SIZE` |
+| Sub brute/permut | brute + permutations | `PAR_SUB_BRUTE_GROUP_SIZE` |
+| OSINT group 1 | domain/ip/emails/dorks/3rd parties | `PAR_OSINT_GROUP1_SIZE` |
+| OSINT group 2 | repos/metadata/apileaks/zone/favicon | `PAR_OSINT_GROUP2_SIZE` |
+| Web detect group | screenshot/cdn/portscan | `PAR_WEB_DETECT_GROUP_SIZE` |
+| Vulns group 1..4 | vuln stages | `PAR_VULNS_GROUP1_SIZE` ... `PAR_VULNS_GROUP4_SIZE` |
+
+All group sizes are additionally capped at runtime by `PARALLEL_MAX_JOBS` (and reduced under backpressure when rate-limit pressure is high).
 
 ### When NOT to Use Parallelization
 

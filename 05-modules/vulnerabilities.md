@@ -64,16 +64,16 @@ INTERACTSH_TOKEN=""  # Optional, for private server
 | `ssrf_checks` | Server-Side Request Forgery | ffuf, interactsh |
 | `crlf_checks` | CRLF Injection | crlfuzz |
 | `lfi` | Local File Inclusion | ffuf |
-| `ssti` | Server-Side Template Injection | ffuf |
+| `ssti` | Server-Side Template Injection | TInjA, ffuf (legacy fallback) |
 | `command_injection` | Command Injection | commix |
 | `prototype_pollution` | Prototype Pollution | ppmap |
-| `smuggling` | HTTP Request Smuggling | smuggler |
-| `webcache` | Web Cache Poisoning | Web-Cache-Vulnerability-Scanner |
+| `smuggling` | HTTP Request Smuggling | smugglex |
+| `webcache` | Web Cache Poisoning | Web-Cache-Vulnerability-Scanner, toxicache |
 | `4xxbypass` | 403/401 Bypass | nomore403 |
 | `fuzzparams` | Parameter Fuzzing | nuclei |
 | `test_ssl` | SSL/TLS Issues | testssl |
 | `spraying` | Password Spraying | brutespray |
-| `brokenLinks` | Broken Link Hijacking | katana |
+| `brokenLinks` | Broken Link Hijacking | second-order, katana (legacy) |
 
 ---
 
@@ -94,15 +94,26 @@ SSRF_CHECKS=true
 CRLF_CHECKS=true
 LFI=true
 SSTI=true
+SSTI_ENGINE="tinja"  # tinja|legacy
+TINJA_RATELIMIT=0
+TINJA_TIMEOUT=15
 SQLI=true
 SQLMAP=true
 GHAURI=false
 BROKENLINKS=true
+BROKENLINKS_ENGINE="second-order"  # second-order|legacy
+SECOND_ORDER_CONFIG="${tools}/second-order/config/takeover.json"
+SECOND_ORDER_DEPTH=1
+SECOND_ORDER_THREADS=10
+SECOND_ORDER_INSECURE=false
 SPRAY=true
 COMM_INJ=true
 PROTO_POLLUTION=true
 SMUGGLING=true
 WEBCACHE=true
+WEBCACHE_TOXICACHE=true
+TOXICACHE_THREADS=70
+TOXICACHE_USER_AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
 BYPASSER4XX=true
 FUZZPARAMS=true
 
@@ -289,6 +300,9 @@ vulns/ssti.txt
 **Configuration:**
 ```bash
 SSTI=true
+SSTI_ENGINE="tinja"   # tinja|legacy
+TINJA_RATELIMIT=0
+TINJA_TIMEOUT=15
 ssti_wordlist=${tools}/ssti_wordlist.txt
 ```
 
@@ -506,11 +520,15 @@ Tests for web cache poisoning vulnerabilities.
 **Output:**
 ```
 vulns/webcache.txt
+vulns/webcache_toxicache.txt
 ```
 
 **Configuration:**
 ```bash
 WEBCACHE=true
+WEBCACHE_TOXICACHE=true
+TOXICACHE_THREADS=70
+TOXICACHE_USER_AGENT="Mozilla/5.0 (...)"
 ```
 
 ---
@@ -530,7 +548,7 @@ URLs with redirect parameters → Oralyzer →
 
 **Output:**
 ```
-vulns/open_redirect.txt
+vulns/redirect.txt
 ```
 
 **Sample Output:**
@@ -679,18 +697,29 @@ Identifies broken links that could be hijacked.
 **How It Works:**
 
 ```
-webs.txt → katana (crawl) → Check external links →
-→ Identify dead/available domains → Report
+webs.txt → second-order (default) using takeover config →
+→ Parse non-200 URL attributes → Report
+```
+
+Legacy mode:
+```
+webs.txt → katana (crawl) → httpx status checks →
+→ Extract 4xx URLs → Report
 ```
 
 **Output:**
 ```
-vulns/broken_links.txt
+vulns/brokenLinks.txt
 ```
 
 **Configuration:**
 ```bash
 BROKENLINKS=true
+BROKENLINKS_ENGINE="second-order"  # second-order|legacy
+SECOND_ORDER_CONFIG="${tools}/second-order/config/takeover.json"
+SECOND_ORDER_DEPTH=1
+SECOND_ORDER_THREADS=10
+SECOND_ORDER_INSECURE=false
 ```
 
 ---
@@ -738,9 +767,12 @@ SSRF_CHECKS=false
 | `vulns/ssrf.txt` | SSRF vulnerabilities |
 | `vulns/lfi.txt` | LFI/path traversal |
 | `vulns/ssti.txt` | Template injection |
-| `vulns/open_redirect.txt` | Open redirects |
+| `vulns/ssti_tinja.txt` | Template injection (TInjA-normalized findings) |
+| `vulns/redirect.txt` | Open redirects |
 | `vulns/4xxbypass.txt` | Access control bypasses |
 | `vulns/testssl.txt` | SSL/TLS issues |
+| `vulns/webcache_toxicache.txt` | toxicache web cache findings |
+| `vulns/brokenLinks.txt` | Broken links/takeover candidates |
 
 ---
 

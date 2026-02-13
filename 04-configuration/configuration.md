@@ -70,11 +70,11 @@ SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 profile_shell=".$(basename "${SHELL:-/bin/bash}")rc"
 ```
 
-### Version Information
+### Runtime Metadata
 
 ```bash
-# Auto-detected from git
-reconftw_version="$(git rev-parse --abbrev-ref HEAD)-$(git describe --tags)"
+# Runtime metadata is calculated automatically for logs/reports
+# No manual configuration required
 ```
 
 ### Resolver Settings
@@ -154,6 +154,9 @@ SHODAN_API_KEY="your_shodan_api_key"
 # WhoisXML API for domain lookups
 WHOISXML_API="your_whoisxml_api_key"
 
+# ProjectDiscovery Cloud Platform API for asnmap ASN enumeration
+PDCP_API_KEY="your_projectdiscovery_api_key"
+
 # Blind XSS callback server
 XSS_SERVER="https://your.xss.hunter"
 
@@ -180,6 +183,7 @@ Edit `secrets.cfg`:
 # API Keys
 SHODAN_API_KEY="abc123..."
 WHOISXML_API="xyz789..."
+PDCP_API_KEY="pdcp_abc123..."
 
 # Callback servers
 XSS_SERVER="https://xss.example.com"
@@ -189,6 +193,8 @@ COLLAB_SERVER="https://interact.example.com"
 slack_channel="C0XXXXXXXXX"
 slack_auth="xoxb-..."
 ```
+
+`ASN_ENUM` requires `PDCP_API_KEY` to run `asnmap`. If the key is not set, reconFTW will skip ASN enumeration and log the reason.
 
 ### Token Files
 
@@ -227,6 +233,10 @@ EMAILS=true                  # Email harvesting
 DOMAIN_INFO=true             # WHOIS lookups
 IP_INFO=true                 # IP reverse lookup and geolocation
 API_LEAKS=true               # Postman/Swagger leak detection
+API_LEAKS_POSTLEAKS=true     # Include postleaksNg Postman search
+POSTLEAKS_THREADS=10         # postleaksNg workers
+POSTLEAKS_INCLUDE=""         # Optional include filter
+POSTLEAKS_EXCLUDE=""         # Optional exclude filter
 THIRD_PARTIES=true           # Third-party misconfiguration checks
 SPOOF=true                   # Domain spoofing checks
 MAIL_HYGIENE=true            # SPF/DMARC analysis
@@ -343,6 +353,11 @@ WEBPROBESIMPLE=true          # Probe ports 80/443
 WEBPROBEFULL=true            # Probe uncommon web ports
 WEBSCREENSHOT=true           # Capture screenshots
 VIRTUALHOSTS=false           # Virtual host fuzzing (slower)
+FAVIRECON=true               # Favicon-based technology recon
+FAVIRECON_CONCURRENCY=50
+FAVIRECON_TIMEOUT=10
+FAVIRECON_RATE_LIMIT=0
+FAVIRECON_PROXY=""
 
 # Uncommon web ports to probe
 UNCOMMON_PORTS_WEB=$(cat "${SCRIPTPATH}/config/uncommon_ports_web.txt" 2>/dev/null | tr -d '\n')
@@ -399,15 +414,26 @@ SSRF_CHECKS=true             # SSRF testing
 CRLF_CHECKS=true             # CRLF injection
 LFI=true                     # Local file inclusion
 SSTI=true                    # Server-side template injection
+SSTI_ENGINE="tinja"          # tinja|legacy
+TINJA_RATELIMIT=0
+TINJA_TIMEOUT=15
 SQLI=true                    # SQL injection
 SQLMAP=true                  # SQLMap testing
 GHAURI=false                 # Ghauri SQLi testing
 BROKENLINKS=true             # Broken link detection
+BROKENLINKS_ENGINE="second-order" # second-order|legacy
+SECOND_ORDER_CONFIG="${tools}/second-order/config/takeover.json"
+SECOND_ORDER_DEPTH=1
+SECOND_ORDER_THREADS=10
+SECOND_ORDER_INSECURE=false
 SPRAY=true                   # Password spraying
 COMM_INJ=true                # Command injection
 PROTO_POLLUTION=true         # Prototype pollution
 SMUGGLING=true               # HTTP request smuggling
 WEBCACHE=true                # Web cache issues
+WEBCACHE_TOXICACHE=true      # Add toxicache engine
+TOXICACHE_THREADS=70
+TOXICACHE_USER_AGENT="Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
 BYPASSER4XX=true             # 4XX bypass attempts
 FUZZPARAMS=true              # Parameter fuzzing
 ```
@@ -666,6 +692,42 @@ PERF_PROFILE="balanced"              # low|balanced|max auto-tuning
 
 `PERF_PROFILE` automatically adjusts thread/job settings from available CPU and memory.  
 Use `low` for constrained hosts, `balanced` for normal runs, and `max` for dedicated scanning boxes.
+
+### Parallel Execution and UI
+
+```bash
+PARALLEL_MODE=true                   # Enable parallel batches globally (default)
+PARALLEL_MAX_JOBS=4                  # Hard cap for concurrent jobs
+PARALLEL_LOG_MODE="summary"          # summary | tail | full (log replay policy)
+PARALLEL_TAIL_LINES=20               # Tail lines per job in tail mode
+PARALLEL_HEARTBEAT_SECONDS=20        # Live progress refresh interval
+
+PARALLEL_UI_MODE="clean"             # clean | balanced | trace
+PARALLEL_PROGRESS_SHOW_ETA=true      # Show ETA only once estimate is stable
+PARALLEL_PROGRESS_SHOW_ACTIVE=true   # Show active task list
+PARALLEL_PROGRESS_COMPACT_ACTIVE_MAX=4
+PARALLEL_TRACE_SLOW_SECONDS=30       # Balanced mode: show finished details for slow jobs
+
+# Optional per-group sizing (effective concurrency still capped by PARALLEL_MAX_JOBS)
+PAR_OSINT_GROUP1_SIZE=5
+PAR_OSINT_GROUP2_SIZE=5
+PAR_SUB_PASSIVE_GROUP_SIZE=4
+PAR_SUB_DEP_ACTIVE_GROUP_SIZE=3
+PAR_SUB_POST_ACTIVE_GROUP_SIZE=2
+PAR_SUB_BRUTE_GROUP_SIZE=2
+PAR_WEB_DETECT_GROUP_SIZE=3
+PAR_VULNS_GROUP1_SIZE=4
+PAR_VULNS_GROUP2_SIZE=4
+PAR_VULNS_GROUP3_SIZE=3
+PAR_VULNS_GROUP4_SIZE=3
+```
+
+**Notes:**
+- `clean` is recommended for daily use.
+- In TTY, progress uses a single live line (minimal noise).
+- In no-TTY/log output, periodic progress snapshots are suppressed.
+- `trace` is useful for diagnosing parallel orchestration issues.
+- `--no-parallel` bypasses parallel batches and keeps sequential presentation.
 
 ### IPv6
 

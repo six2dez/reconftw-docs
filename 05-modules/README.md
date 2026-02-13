@@ -50,11 +50,11 @@ reconFTW is organized into specialized modules, each handling a specific phase o
 
 | Module | Functions | Primary Tools | Output Directory |
 |--------|-----------|---------------|------------------|
-| [OSINT](osint.md) | 12 | theHarvester, gitdorker, trufflehog | `osint/` |
-| [Subdomains](subdomains.md) | 17 | subfinder, amass, puredns, dnsx | `subdomains/` |
+| [OSINT](osint.md) | 12 | dorks_hunter, gitdorks_go, postleaksNg, trufflehog | `osint/` |
+| [Subdomains](subdomains.md) | 17 | subfinder, puredns, dnsx, dnstake, hakip2host | `subdomains/` |
 | [Hosts](hosts.md) | 6 | nmap, smap, cdncheck, wafw00f | `hosts/` |
-| [Web Analysis](web-analysis.md) | 17 | httpx, katana, ffuf, gowitness | `webs/`, `fuzzing/`, `js/` |
-| [Vulnerabilities](vulnerabilities.md) | 18 | nuclei, dalfox, sqlmap, ssrf-sheriff | `vulns/` |
+| [Web Analysis](web-analysis.md) | 18 | httpx, favirecon, katana, ffuf | `webs/`, `fuzzing/`, `js/` |
+| [Vulnerabilities](vulnerabilities.md) | 18 | nuclei, dalfox, sqlmap, TInjA, second-order, toxicache | `vulns/` |
 
 ---
 

@@ -63,6 +63,7 @@
 |----------|------------|------|-------|
 | `webprobe_simple` | ✅ | web-analysis.md | Complete |
 | `webprobe_full` | ✅ | web-analysis.md | Complete |
+| `favirecon_tech` | ✅ | web-analysis.md | Complete |
 | `screenshot` | ✅ | web-analysis.md | Complete |
 | `virtualhosts` | ✅ | web-analysis.md | Complete |
 | `urlchecks` | ✅ | web-analysis.md | Complete |
@@ -84,9 +85,9 @@
 | `waf_checks` | ✅ | hosts.md | In hosts doc |
 | `favicon` | ✅ | hosts.md | In hosts doc |
 | `nuclei_check` | ✅ | vulnerabilities.md | In vulns doc |
-| `brokenLinks` | ⚠️ | vulnerabilities.md | Brief mention |
+| `brokenLinks` | ✅ | vulnerabilities.md | Complete |
 
-**Coverage: 22/24 (92%)**
+**Coverage: 24/25 (96%)**
 
 ---
 
@@ -183,17 +184,13 @@
 ## 4. Undocumented Functions (New/Missing)
 
 ### Must Add:
-1. `grpc_reflection` - gRPC endpoint testing (NEW)
-2. `cloud_extra_providers` - Additional cloud enumeration
-3. `wordlist_gen_roboxtractor` - Robots.txt wordlist generation
-4. `password_dict` - Password dictionary generation
+1. No critical missing function docs identified in current modules.
 
 ### Should Expand:
 1. `graphql_scan` - More details needed
 2. `websocket_checks` - More details needed
 3. `fuzzparams` - More details needed
 4. `spraying` - More details needed
-5. `brokenLinks` - More details needed
 
 ---
 

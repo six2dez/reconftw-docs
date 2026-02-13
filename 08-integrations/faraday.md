@@ -285,7 +285,7 @@ If automatic integration fails, import manually:
 faraday-cli tool nmap -w reconftw hosts/portscan_active.xml
 
 # Import nuclei results
-faraday-cli tool nuclei -w reconftw vulns/nuclei_output/*.json
+faraday-cli tool nuclei -w reconftw nuclei_output/*_json.txt
 ```
 
 ---

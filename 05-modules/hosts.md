@@ -16,6 +16,8 @@ The host analysis module examines the infrastructure behind discovered assets, i
 | `geo_info` | IP geolocation | ipinfo |
 | `banner_grabber` | Service banner extraction | nmap |
 
+> `favirecon_tech` (favicon technology fingerprinting) is executed in the Web Analysis module and writes to `webs/favirecon.[json|txt]`.
+
 ---
 
 ## Configuration Options

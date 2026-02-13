@@ -38,7 +38,7 @@ OSINT is executed before any other module for strategic reasons:
 | `github_dorks` | Search GitHub for leaked secrets | gitdorks_go |
 | `github_repos` | Analyze organization repositories | enumerepo, gitleaks, trufflehog |
 | `metadata` | Extract document metadata | metagoofil, exiftool |
-| `apileaks` | Detect exposed APIs | porch-pirate, SwaggerSpy |
+| `apileaks` | Detect exposed APIs | porch-pirate, SwaggerSpy, postleaksNg |
 | `emails` | Harvest email addresses | EmailHarvester, LeakSearch |
 | `domain_info` | WHOIS and domain intelligence | whois, msftrecon, scopify |
 | `third_party_misconfigs` | Third-party service misconfigs | misconfig-mapper |
@@ -264,7 +264,7 @@ Searches for exposed API documentation and collections in:
 ### How It Works
 
 ```
-Target domain → porch-pirate (Postman) → SwaggerSpy (Swagger) → 
+Target domain → porch-pirate + postleaksNg (Postman) + SwaggerSpy (Swagger) →
 → trufflehog (analyze for secrets) → Combined results
 ```
 
@@ -272,6 +272,7 @@ Target domain → porch-pirate (Postman) → SwaggerSpy (Swagger) →
 
 ```
 osint/postman_leaks.txt           # Raw Postman findings
+osint/postman_leaks_postleaksng/  # postleaksNg JSON output directory
 osint/swagger_leaks.txt           # Raw Swagger findings
 osint/postman_leaks_trufflehog.json   # Secrets from Postman
 osint/swagger_leaks_trufflehog.json   # Secrets from Swagger
@@ -293,6 +294,10 @@ osint/swagger_leaks_trufflehog.json   # Secrets from Swagger
 
 ```bash
 API_LEAKS=true
+API_LEAKS_POSTLEAKS=true
+POSTLEAKS_THREADS=10
+POSTLEAKS_INCLUDE=""
+POSTLEAKS_EXCLUDE=""
 ```
 
 ---

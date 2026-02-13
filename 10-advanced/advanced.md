@@ -347,7 +347,7 @@ Recon/example.com/.called_fn/
 
 # Resume - skips completed functions
 ./reconftw.sh -d example.com -a
-# Output: [sub_passive] Already run, skipping...
+# Output includes normalized cache/skip statuses (for example: CACHE sub_passive 0s)
 ```
 
 ### Reset Checkpoints

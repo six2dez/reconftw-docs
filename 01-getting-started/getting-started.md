@@ -299,6 +299,7 @@ Edit `secrets.cfg`:
 # API keys for enhanced functionality
 SHODAN_API_KEY="your_shodan_api_key"
 WHOISXML_API="your_whoisxml_api_key"
+PDCP_API_KEY="your_projectdiscovery_api_key"
 XSS_SERVER="your_xss_hunter_server"
 COLLAB_SERVER="your_interactsh_server"
 ```

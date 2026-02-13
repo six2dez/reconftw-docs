@@ -438,6 +438,37 @@ Files expected but not present in output.
 
 ---
 
+### Parallel Output Too Noisy
+
+**Symptom:**
+Terminal output is hard to follow during parallel execution.
+
+**Solutions:**
+
+1. **Use clean parallel UI (recommended):**
+   ```bash
+   # reconftw.cfg
+   PARALLEL_UI_MODE="clean"
+   ```
+
+2. **Force sequential mode for debugging:**
+   ```bash
+   ./reconftw.sh -d example.com -r --no-parallel
+   ```
+
+3. **Use trace mode only when investigating orchestration issues:**
+   ```bash
+   # reconftw.cfg
+   PARALLEL_UI_MODE="trace"
+   ```
+
+4. **Reduce heartbeat refresh frequency if live progress updates are too frequent:**
+   ```bash
+   PARALLEL_HEARTBEAT_SECONDS=30
+   ```
+
+---
+
 ### Corrupted Output
 
 **Symptom:**

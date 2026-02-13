@@ -334,6 +334,7 @@ EOF
 **Web Functions:**
 - `webprobe_simple`
 - `webprobe_full`
+- `favirecon_tech`
 - `screenshot`
 - `virtualhosts`
 - `urlchecks`
@@ -343,8 +344,13 @@ EOF
 - `fuzz`
 - `cms_scanner`
 - `wordlist_gen`
+- `wordlist_gen_roboxtractor`
+- `password_dict`
 - `iishortname`
 - `graphql_scan`
+- `grpc_reflection`
+- `param_discovery`
+- `websocket_checks`
 
 **Vulnerability Functions:**
 - `nuclei_check`
@@ -619,12 +625,11 @@ Preview commands without executing them.
 ./reconftw.sh -d example.com -r --dry-run
 ```
 
-**Output:**
-```
-[DRY-RUN] Would execute: subfinder -d example.com -all -o .tmp/subfinder.txt
-[DRY-RUN] Would execute: amass enum -passive -d example.com -o .tmp/amass.txt
-...
-```
+**Output behavior:**
+- Commands are recorded without execution
+- Per-module summary shows command count and tool list
+- With `--verbose`, full normalized command list is printed
+- Sensitive CLI arguments are redacted in dry-run previews
 
 **Best for:** Testing configurations, understanding workflow
 
@@ -641,6 +646,15 @@ Run independent functions in parallel for faster scans.
 - Runs active DNS checks in parallel after passive completes
 - Runs TLS and analytics checks after resolution
 - Uses native bash job control (no external dependencies)
+
+**Default behavior:**
+- Parallel execution is enabled by default (`PARALLEL_MODE=true` in config)
+- Use `--no-parallel` to force sequential execution for easier step-by-step debugging
+
+**Terminal UX in parallel mode:**
+- Clean progress snapshots per batch (`X/Y`, `%`, elapsed, ETA)
+- Queue line is shown only when there are pending tasks
+- Task status remains normalized (`OK/WARN/FAIL/SKIP/CACHE`)
 
 **Performance impact:**
 - ~2-3x faster subdomain enumeration
@@ -739,7 +753,7 @@ Verify all required tools are installed.
 **Output:**
 ```
 [✓] subfinder
-[✓] amass
+[✓] dnsx
 [✓] httpx
 [✗] nuclei (not found)
 ...

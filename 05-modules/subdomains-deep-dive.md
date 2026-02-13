@@ -326,6 +326,7 @@ When scanning wildcard scopes, prevents enumeration of government or military su
 Runs independent functions concurrently. Phases maintain dependencies:
 1. Passive functions run in parallel
 2. Wait for passive to complete
-3. Active functions run in parallel
-4. Post-active functions run after resolution
-5. Bruteforce runs with limited parallelism (resource intensive)
+3. `sub_active` runs first (dependency source)
+4. Dependent active enrichment runs in parallel (`sub_noerror`, `sub_dns`)
+5. Post-active functions run after resolution
+6. Bruteforce/permutation functions run with limited parallelism (resource intensive)

@@ -55,8 +55,9 @@
 │                  │ virtual hosts, parameters, GraphQL, gRPC     │
 ├──────────────────┼──────────────────────────────────────────────┤
 │  Vulnerabilities │ Nuclei templates, XSS, SQLi, SSRF, LFI,     │
-│                  │ SSTI, CORS, CRLF, command injection,         │
-│                  │ prototype pollution, 403 bypass, smuggling   │
+│                  │ SSTI (TInjA), CORS, CRLF, command injection, │
+│                  │ prototype pollution, 403 bypass, smuggling,  │
+│                  │ web cache poisoning, broken links/takeover   │
 ├──────────────────┼──────────────────────────────────────────────┤
 │  Host Analysis   │ Port scanning (nmap/naabu), CDN detection,   │
 │                  │ WAF fingerprinting, geolocation, banners     │

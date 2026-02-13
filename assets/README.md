@@ -33,7 +33,7 @@ The following images are referenced in the documentation and need to be created:
 | Filename | Location | Description |
 |----------|----------|-------------|
 | `terminal-scan-output.png` | getting-started.md | Terminal showing reconFTW running a scan |
-| `gowitness-gallery.png` | web-analysis.md | Gowitness screenshot gallery example |
+| `screenshot-gallery.png` | web-analysis.md | Nuclei screenshot gallery example |
 | `nuclei-results.png` | vulnerabilities.md | Example Nuclei vulnerability output |
 | `faraday-dashboard.png` | faraday.md | Faraday web interface with imported results |
 

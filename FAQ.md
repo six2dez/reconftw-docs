@@ -122,7 +122,8 @@ Yes! Simply run the same command again. reconFTW uses checkpoints to skip comple
 
 # Resume - just run again
 ./reconftw.sh -d example.com -a
-# Output: [sub_passive] Already run, skipping...
+# Output includes normalized status (CACHE/SKIP), for example:
+# CACHE sub_passive 0s
 ```
 
 ### How do I force a full rescan?
@@ -218,10 +219,10 @@ Recon/
 
 ### What format are vulnerability results in?
 
-Nuclei results are saved in JSON format in `vulns/nuclei_output/`:
-- `nuclei_critical.json`
-- `nuclei_high.json`
-- `nuclei_medium.json`
+Nuclei results are saved in JSON-line text artifacts in `nuclei_output/`:
+- `critical_json.txt`
+- `high_json.txt`
+- `medium_json.txt`
 - etc.
 
 ### How do I generate a report?
@@ -237,7 +238,7 @@ Or manually aggregate results from the output files.
 
 Results can be converted:
 ```bash
-cat vulns/nuclei_output/*.json | jq -r '[.host, .["template-id"], .info.severity] | @csv'
+cat nuclei_output/*_json.txt | jq -r '[.host, .["template-id"], .info.severity] | @csv'
 ```
 
 ---

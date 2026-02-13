@@ -96,7 +96,7 @@ Recon/example.com/
 ├── webs/                    # Web probing results
 │   ├── webs.txt             # [KEY] Live HTTP/HTTPS servers
 │   ├── webs_all.txt         # All probed URLs with metadata
-│   ├── webs_info.txt        # Detailed web info (title, status, tech)
+│   ├── web_full_info_plain.txt  # Detailed web info (title, status, tech)
 │   ├── url_extract.txt      # Extracted URLs from crawling
 │   └── takeover.txt         # Subdomain takeover findings
 │
@@ -119,7 +119,7 @@ Recon/example.com/
 │   ├── low.txt / low_json.txt
 │   ├── medium.txt / medium_json.txt
 │   ├── high.txt / high_json.txt
-│   └── critical.txt / critical_json.txt
+│   └── critical_json.txt
 │
 ├── vulns/                   # Additional vulnerability findings
 │   ├── xss.txt              # XSS vulnerabilities

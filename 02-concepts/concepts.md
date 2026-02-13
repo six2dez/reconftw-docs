@@ -64,8 +64,8 @@ Gather publicly available information about the target:
 | Google Dorks | Find exposed files/pages | dorks_hunter |
 | GitHub Dorks | Find leaked credentials | gitdorks_go |
 | Metadata | Extract document metadata | metagoofil, exiftool |
-| Email Harvesting | Discover email addresses | emailfinder |
-| API Leaks | Find exposed APIs | porch-pirate, SwaggerSpy |
+| Email Harvesting | Discover email addresses | EmailHarvester, LeakSearch |
+| API Leaks | Find exposed APIs | porch-pirate, SwaggerSpy, postleaksNg |
 | Domain Info | WHOIS, registrant data | whois, msftrecon |
 
 ### Phase 2: Subdomain Enumeration
@@ -208,7 +208,9 @@ function some_scan() {
 |----------|---------|
 | `parallel_run()` | Run commands in parallel with job limit |
 | `parallel_funcs()` | Run bash functions in parallel |
-| `parallel_batch()` | Run commands with rate limiting |
+| `parallel_batch()` | Run functions in grouped batches |
+| `_parallel_snapshot()` | Update batch live progress (`X/Y`, `%`, elapsed, stable ETA) |
+| `_parallel_emit_job_output()` | Normalize per-job status and log replay policy |
 | `parallel_passive_enum()` | Parallel passive subdomain enumeration |
 | `parallel_active_enum()` | Parallel active DNS enumeration |
 | `parallel_postactive_enum()` | Parallel post-resolution (TLS, analytics) |
@@ -596,7 +598,7 @@ Key variables used throughout reconFTW:
 │  └──────┬───────┘                                                           │
 │         │                                                                    │
 │         ▼                                                                    │
-│  ┌──────────────┐    Passive: subfinder, amass, crt.sh                      │
+│  ┌──────────────┐    Passive: subfinder, crt.sh                              │
 │  │  SUBDOMAINS  │──▶ Active:  puredns, massdns                              │
 │  │  (enum)      │    Output:  subdomains/subdomains.txt                     │
 │  └──────┬───────┘                                                           │
@@ -604,7 +606,7 @@ Key variables used throughout reconFTW:
 │         ▼                                                                    │
 │  ┌──────────────┐                                                           │
 │  │  WEB PROBE   │──▶ webs/webs.txt (live HTTP/HTTPS URLs)                   │
-│  │  (httpx)     │    webs/webs_info.txt (titles, status, tech)              │
+│  │  (httpx)     │    webs/web_full_info_plain.txt (titles, status, tech)    │
 │  └──────┬───────┘                                                           │
 │         │                                                                    │
 │         ├───────────────────────┬───────────────────────┐                   │
@@ -624,12 +626,12 @@ Key variables used throughout reconFTW:
 │  ┌──────────────────────────────────────────────────────────────────┐       │
 │  │                        VULNERABILITY SCANNING                     │       │
 │  │  ─────────────────────────────────────────────────────────────   │       │
-│  │  nuclei (CVEs)  │  dalfox (XSS)  │  sqlmap (SQLi)  │  ffuf (fuzz)│       │
-│  │  cors           │  ssrf          │  lfi            │  ssti       │       │
+│  │  nuclei (CVEs)  │  dalfox (XSS)  │  sqlmap (SQLi)  │  TInjA      │       │
+│  │  cors           │  ssrf          │  lfi            │  toxicache  │       │
 │  └──────────────────────────────────────────────────────────────────┘       │
 │         │                                                                    │
 │         ▼                                                                    │
-│  vulns/nuclei_output/, vulns/xss.txt, vulns/sqli.txt, etc.                  │
+│  nuclei_output/, vulns/xss.txt, vulns/sqli.txt, etc.                        │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -810,7 +812,7 @@ Best for: Automated security checks in pipelines.
     
 - name: Check Critical Vulns
   run: |
-    if [ -s Recon/*/vulns/nuclei_critical.json ]; then
+    if [ -s Recon/*/nuclei_output/critical_json.txt ]; then
       echo "Critical vulnerabilities found!"
       exit 1
     fi
