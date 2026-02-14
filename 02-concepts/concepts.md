@@ -599,7 +599,7 @@ Key variables used throughout reconFTW:
 │         │                                                                    │
 │         ▼                                                                    │
 │  ┌──────────────┐    Passive: subfinder, crt.sh                              │
-│  │  SUBDOMAINS  │──▶ Active:  puredns, massdns                              │
+│  │  SUBDOMAINS  │──▶ Active:  puredns (massdns backend) or dnsx             │
 │  │  (enum)      │    Output:  subdomains/subdomains.txt                     │
 │  └──────┬───────┘                                                           │
 │         │                                                                    │

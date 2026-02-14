@@ -83,7 +83,7 @@ reconFTW automatically sends:
 | Hosts | Subdomain resolution | Host |
 | Services | Port scan (nmap) | Service |
 | Vulnerabilities | Nuclei results | Vulnerability |
-| CVEs | Nmap vulners script | Vulnerability |
+| CVEs (Optional) | Nmap vulners script (deep portscan profile) | Vulnerability |
 
 ---
 

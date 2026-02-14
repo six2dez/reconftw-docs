@@ -118,11 +118,11 @@ SCREENSHOT=true
 # Full vulnerability assessment
 NUCLEICHECK=true
 NUCLEI_SEVERITY="critical,high,medium"
+NUCLEI_DAST=true
 FUZZ=true
 XSS=true
 SQLI=true
 SSRF_CHECKS=true
-CORS=true
 
 # Rate limiting (be respectful)
 HTTPX_RATELIMIT=50

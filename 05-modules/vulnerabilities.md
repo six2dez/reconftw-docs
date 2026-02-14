@@ -23,7 +23,7 @@ Vulnerability checks run last in reconFTW's pipeline for important reasons:
 1. **Dependency Chain**: Tests require data from previous phases:
    - URLs from web analysis → XSS, SQLi, LFI testing
    - Parameters from param_discovery → Injection point testing
-   - JavaScript analysis → Prototype pollution candidates
+   - JavaScript analysis → Endpoint/secret candidates and richer URL sets
 
 2. **Detection Risk**: Vuln scanning generates suspicious traffic:
    - SQL injection payloads like `' OR 1=1--`
@@ -57,16 +57,14 @@ INTERACTSH_TOKEN=""  # Optional, for private server
 | Function | Vulnerability Type | Tools |
 |----------|-------------------|-------|
 | `nuclei_check` | CVEs, misconfigs, exposures | nuclei |
+| `nuclei_dast` | DAST template pass over URLs and candidates | nuclei |
 | `xss` | Cross-Site Scripting | dalfox |
 | `sqli` | SQL Injection | sqlmap, ghauri |
-| `cors` | CORS Misconfiguration | Corsy |
-| `open_redirect` | Open Redirect | Oralyzer |
 | `ssrf_checks` | Server-Side Request Forgery | ffuf, interactsh |
 | `crlf_checks` | CRLF Injection | crlfuzz |
 | `lfi` | Local File Inclusion | ffuf |
-| `ssti` | Server-Side Template Injection | TInjA, ffuf (legacy fallback) |
+| `ssti` | Server-Side Template Injection | TInjA (default), ffuf (legacy engine) |
 | `command_injection` | Command Injection | commix |
-| `prototype_pollution` | Prototype Pollution | ppmap |
 | `smuggling` | HTTP Request Smuggling | smugglex |
 | `webcache` | Web Cache Poisoning | Web-Cache-Vulnerability-Scanner, toxicache |
 | `4xxbypass` | 403/401 Bypass | nomore403 |
@@ -87,9 +85,7 @@ VULNS_GENERAL=false
 
 # Individual toggles
 XSS=true
-CORS=true
 TEST_SSL=true
-OPEN_REDIRECT=true
 SSRF_CHECKS=true
 CRLF_CHECKS=true
 LFI=true
@@ -108,7 +104,6 @@ SECOND_ORDER_THREADS=10
 SECOND_ORDER_INSECURE=false
 SPRAY=true
 COMM_INJ=true
-PROTO_POLLUTION=true
 SMUGGLING=true
 WEBCACHE=true
 WEBCACHE_TOXICACHE=true
@@ -123,6 +118,11 @@ NUCLEI_TEMPLATES_PATH="$HOME/nuclei-templates"
 NUCLEI_SEVERITY="info,low,medium,high,critical"
 NUCLEI_FLAGS="-silent -retries 2"
 NUCLEI_RATELIMIT=150
+
+# Dedicated DAST pass (optional)
+NUCLEI_DAST=true
+NUCLEI_DAST_TEMPLATE_PATH="${NUCLEI_TEMPLATES_PATH}/dast"
+NUCLEI_DAST_EXTRA_ARGS=""
 
 # Callback servers (for blind vulnerabilities)
 XSS_SERVER="your_xss_hunter_url"
@@ -148,19 +148,18 @@ Nuclei is the primary vulnerability scanner, checking for thousands of known vul
 **How It Works:**
 
 ```
-webs.txt → nuclei (templates) → Scan each URL →
+webs/webs_all.txt → nuclei (templates) → Scan each URL →
 → Match vulnerability patterns → Report findings
 ```
 
 **Output:**
 ```
 nuclei_output/
-├── info_json.txt       # Informational findings
-├── low_json.txt        # Low severity
-├── medium_json.txt     # Medium severity
-├── high_json.txt       # High severity
-├── critical_json.txt   # Critical severity
-└── nuclei_output.txt   # Human-readable summary
+├── info_json.txt / info.txt
+├── low_json.txt / low.txt
+├── medium_json.txt / medium.txt
+├── high_json.txt / high.txt
+└── critical_json.txt / critical.txt
 ```
 
 **Sample Output:**
@@ -303,7 +302,7 @@ SSTI=true
 SSTI_ENGINE="tinja"   # tinja|legacy
 TINJA_RATELIMIT=0
 TINJA_TIMEOUT=15
-ssti_wordlist=${tools}/ssti_wordlist.txt
+ssti_wordlist=${WORDLISTS_DIR}/ssti_wordlist.txt
 ```
 
 ---
@@ -335,7 +334,7 @@ vulns/lfi.txt
 **Configuration:**
 ```bash
 LFI=true
-lfi_wordlist=${tools}/lfi_wordlist.txt
+lfi_wordlist=${WORDLISTS_DIR}/lfi_wordlist.txt
 ```
 
 ---
@@ -390,9 +389,16 @@ http://169.254.169.254/  # AWS metadata
 http://127.0.0.1/
 ```
 
+**Alternate Protocol Payloads (Optional):**
+- Loaded from `config/ssrf_payloads.txt` (e.g., `gopher://`, `dict://`, `file://`, metadata endpoints).
+- Results (body-match based) are written to `vulns/ssrf_alt_protocols.txt`.
+
 **Output:**
 ```
-vulns/ssrf.txt
+vulns/ssrf_requested.txt
+vulns/ssrf_requested_headers.txt
+vulns/ssrf_callback.txt
+vulns/ssrf_alt_protocols.txt
 ```
 
 **Configuration:**
@@ -403,38 +409,33 @@ COLLAB_SERVER="https://your.interact.sh"
 
 ---
 
-### `cors` - CORS Misconfiguration
+### `nuclei_dast` - Nuclei DAST Pass
 
-Tests for CORS misconfigurations that allow unauthorized cross-origin access.
+Runs `nuclei -dast` templates over URL inputs gathered across reconFTW (web targets, extracted URLs, and GF candidates). This is intended to provide a template-based replacement for several single-purpose scanners that overlap with Nuclei coverage.
 
-**Issues Detected:**
-- Wildcard origin (`*`)
-- Reflected origin
-- Null origin allowed
-- Credentials with wildcard
+This module is executed as part of the vulnerability pipeline (`-a` / `VULNS_GENERAL=true`). When vuln scanning is enabled, reconFTW force-enables `nuclei_dast` to avoid accidentally losing coverage due to a separate toggle.
 
-**How It Works:**
-
-```
-webs.txt → Corsy → Test CORS headers →
-→ Check for misconfigs → Report
-```
+**Inputs:**
+- `webs/webs_all.txt` (baseline web targets)
+- `webs/url_extract_nodupes.txt` (extracted URLs)
+- `gf/*.txt` (pattern-based candidates)
 
 **Output:**
 ```
-vulns/cors.txt
+nuclei_output/dast_json.txt
+vulns/nuclei_dast.txt
 ```
 
-**Sample Output:**
-```
-[VULNERABLE] https://api.example.com
-  Issue: Origin Reflected
-  Impact: Attacker can read responses from any origin
-```
+Each JSON line is annotated with `scan_scope:"dast"` for traceability.
+
+**Safety Gate:**
+- When `DEEP=false`, reconFTW may skip the DAST pass if the target URL count exceeds `DEEP_LIMIT2`.
 
 **Configuration:**
 ```bash
-CORS=true
+NUCLEI_DAST=true
+NUCLEI_DAST_TEMPLATE_PATH="${NUCLEI_TEMPLATES_PATH}/dast"
+NUCLEI_DAST_EXTRA_ARGS=""
 ```
 
 ---
@@ -464,26 +465,9 @@ CRLF_CHECKS=true
 
 ## Advanced Vulnerabilities
 
-### `prototype_pollution` - Prototype Pollution
+### Prototype Pollution (Template-Based)
 
-Tests for JavaScript prototype pollution in client-side code.
-
-**How It Works:**
-
-```
-webs.txt → ppmap → Analyze JS →
-→ Test pollution payloads → Report
-```
-
-**Output:**
-```
-vulns/prototype_pollution.txt
-```
-
-**Configuration:**
-```bash
-PROTO_POLLUTION=true
-```
+Dedicated `ppmap` prototype pollution checks were removed. Prefer Nuclei templates (via `nuclei_check` and/or `nuclei_dast`) for prototype pollution coverage.
 
 ---
 
@@ -535,33 +519,9 @@ TOXICACHE_USER_AGENT="Mozilla/5.0 (...)"
 
 ## Bypass Techniques
 
-### `open_redirect` - Open Redirect
+### Open Redirects (Template-Based)
 
-Tests for open redirect vulnerabilities.
-
-**How It Works:**
-
-```
-URLs with redirect parameters → Oralyzer →
-→ Test redirect payloads → Verify redirect → Report
-```
-
-**Output:**
-```
-vulns/redirect.txt
-```
-
-**Sample Output:**
-```
-[VULNERABLE] https://example.com/login?redirect=
-  Payload: //evil.com
-  Redirects to: https://evil.com
-```
-
-**Configuration:**
-```bash
-OPEN_REDIRECT=true
-```
+Dedicated `Oralyzer` open redirect checks were removed. Prefer Nuclei templates for open redirect coverage.
 
 ---
 
@@ -749,7 +709,6 @@ VULNS_GENERAL=true
 VULNS_GENERAL=true
 XSS=true
 SQLI=true
-CORS=false
 SSRF_CHECKS=false
 # ... etc
 ```
@@ -761,14 +720,17 @@ SSRF_CHECKS=false
 | File | Content |
 |------|---------|
 | `nuclei_output/*.txt` | Nuclei findings by severity |
+| `nuclei_output/dast_json.txt` | Nuclei DAST JSON findings |
 | `vulns/xss.txt` | XSS vulnerabilities |
 | `vulns/sqli.txt` | SQL injection |
-| `vulns/cors.txt` | CORS misconfigs |
-| `vulns/ssrf.txt` | SSRF vulnerabilities |
+| `vulns/nuclei_dast.txt` | Nuclei DAST human-readable findings |
+| `vulns/ssrf_requested.txt` | SSRF requested URLs (callback payloads) |
+| `vulns/ssrf_requested_headers.txt` | SSRF requested headers (callback payloads) |
+| `vulns/ssrf_callback.txt` | SSRF callbacks received (OOB) |
+| `vulns/ssrf_alt_protocols.txt` | SSRF alternate protocol findings (content-match based) |
 | `vulns/lfi.txt` | LFI/path traversal |
 | `vulns/ssti.txt` | Template injection |
 | `vulns/ssti_tinja.txt` | Template injection (TInjA-normalized findings) |
-| `vulns/redirect.txt` | Open redirects |
 | `vulns/4xxbypass.txt` | Access control bypasses |
 | `vulns/testssl.txt` | SSL/TLS issues |
 | `vulns/webcache_toxicache.txt` | toxicache web cache findings |

@@ -8,10 +8,9 @@ The host analysis module examines the infrastructure behind discovered assets, i
 
 | Function | Purpose | Tools |
 |----------|---------|-------|
-| `portscan` | Port discovery (passive + active) | nmap, smap |
-| `cdnprovider` | CDN detection and filtering | cdncheck |
+| `portscan` | Port discovery (passive + active) | naabu (optional), nmap, smap |
+| `cdnprovider` | CDN detection and filtering | cdncheck, hakoriginfinder (optional) |
 | `waf_checks` | WAF detection | wafw00f |
-| `favicon` | Real IP discovery via favicon | fav-up |
 | `cloud_extra_providers` | Extra cloud storage enumeration | curl |
 | `geo_info` | IP geolocation | ipinfo |
 | `banner_grabber` | Service banner extraction | nmap |
@@ -33,11 +32,22 @@ PORTSCAN_PASSIVE=true     # Shodan-based (requires API key)
 PORTSCAN_ACTIVE=true      # Nmap-based
 
 # Nmap options
-PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2 --script vulners"
+PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2"
+PORTSCAN_DEEP_OPTIONS="--top-ports 1000 -sV -n -Pn --open --max-retries 2 --script vulners"
+
+# Strategy: legacy nmap-only OR naabu discovery + targeted nmap
+PORTSCAN_STRATEGY=legacy     # legacy|naabu_nmap
+NAABU_ENABLE=true
+NAABU_RATE=1000
+NAABU_PORTS="--top-ports 1000"
+
+# Optional UDP scan (requires privileges on most systems)
+PORTSCAN_UDP=false
+PORTSCAN_UDP_OPTIONS="--top-ports 20 -sU -sV -n -Pn --open"
 
 # Other host checks
-FAVICON=true              # Favicon IP discovery
 CDN_IP=true               # CDN detection
+CDN_BYPASS=true           # Optional origin IP discovery with hakoriginfinder
 GEO_INFO=true             # Geolocation
 WAF_DETECTION=true        # WAF detection
 
@@ -100,12 +110,13 @@ Performs direct port scanning against target IPs.
 
 ```
 IP addresses (non-CDN) → nmap → 
-→ Scan ports → Service detection → Vuln scripts → Output
+→ Scan ports → Service detection → (optional CVE enrichment in deep profile) → Output
 ```
 
 **Default Scan Options:**
 ```bash
-PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2 --script vulners"
+PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2"
+PORTSCAN_DEEP_OPTIONS="--top-ports 1000 -sV -n -Pn --open --max-retries 2 --script vulners"
 ```
 
 **Option Breakdown:**
@@ -117,13 +128,16 @@ PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2 --scr
 | `-Pn` | Skip host discovery |
 | `--open` | Show only open ports |
 | `--max-retries 2` | Retry limit |
-| `--script vulners` | Check for CVEs |
+| `--script vulners` | Optional (deep profile) CVE enrichment |
 
 **Output:**
 ```
 hosts/portscan_active.txt      # Human readable
 hosts/portscan_active.xml      # Nmap XML format
 hosts/portscan_active.gnmap    # Greppable format
+hosts/portscan_active_targeted.xml   # When PORTSCAN_STRATEGY=naabu_nmap
+hosts/portscan_active_udp.xml        # When PORTSCAN_UDP=true
+hosts/naabu_open.txt                 # When PORTSCAN_STRATEGY=naabu_nmap
 ```
 
 **Sample Output:**
@@ -131,8 +145,6 @@ hosts/portscan_active.gnmap    # Greppable format
 Nmap scan report for 192.168.1.10
 PORT      STATE SERVICE    VERSION
 22/tcp    open  ssh        OpenSSH 8.2p1
-| vulners: 
-|   CVE-2020-15778  6.8
 80/tcp    open  http       nginx 1.18.0
 443/tcp   open  ssl/https  nginx 1.18.0
 3306/tcp  open  mysql      MySQL 8.0.26
@@ -156,6 +168,19 @@ PORTSCAN_ACTIVE_OPTIONS="-p- -sV -sC -Pn --open"
 # Stealth scan (slower, less detectable)
 PORTSCAN_ACTIVE_OPTIONS="-sS -T2 --top-ports 1000 -Pn"
 ```
+
+### Two-Stage Strategy (naabu + nmap)
+
+When `PORTSCAN_STRATEGY=naabu_nmap`, reconFTW uses a 2-stage flow:
+
+1. `naabu` quickly discovers open TCP ports and writes `hosts/naabu_open.txt`.
+2. `nmap` runs only against discovered ports and writes `hosts/portscan_active_targeted.xml` (and related `-oA` outputs).
+
+This keeps coverage while reducing total `nmap` time on medium/large targets.
+
+### Optional UDP Scan
+
+When `PORTSCAN_UDP=true`, reconFTW runs an additional UDP scan (separate output `hosts/portscan_active_udp.xml`). UDP scanning usually requires elevated privileges depending on OS/config.
 
 ---
 
@@ -190,6 +215,7 @@ All IPs → cdncheck →
 ```
 hosts/cdn.txt          # CDN IPs (excluded from active scans)
 hosts/ips.txt          # Non-CDN IPs (scanned)
+hosts/cdn_providers.txt # Raw cdncheck classifications (cdn/waf hints)
 ```
 
 **Sample Output:**
@@ -266,42 +292,31 @@ WAF_DETECTION=true
 
 ---
 
-## Favicon Analysis
+## CDN Origin Discovery (Optional)
 
-### `favicon` - Real IP Discovery
+### hakoriginfinder - Origin IP Candidates
 
-Discovers real IP addresses behind CDN/proxy by analyzing favicon hashes.
+When `CDN_BYPASS=true`, reconFTW can run `hakoriginfinder` as a best-effort attempt to discover origin IP candidates for CDN-fronted assets.
 
 **How It Works:**
 
 ```
-Known favicon hash → Shodan search → 
-→ Find servers with same favicon → Potential real IPs
+subdomains.txt (hosts) → hakoriginfinder → candidate origin IPs → hosts/origin_ips.txt
 ```
-
-**Technique:**
-1. Download favicon from target
-2. Calculate hash (MurmurHash3)
-3. Search Shodan for matching hashes
-4. Servers with same favicon may be the real origin
 
 **Output:**
 ```
-hosts/favicontest.txt
+hosts/origin_ips.txt
 ```
 
-**Sample Output:**
-```
-# Favicon hash: -1234567890
-Real IP candidates:
-  192.168.1.100 (Direct match)
-  10.0.0.50 (Partial match)
-```
+**Notes / Limitations:**
+- Not guaranteed (depends on the target, DNS history, and public data).
+- Treat results as candidates: validate scope and ownership before scanning aggressively.
+- Origin IPs are automatically added back to the scanning pipeline (they become part of `hosts/ips.txt` / `.tmp/ips_nocdn.txt`).
 
 **Configuration:**
 ```bash
-FAVICON=true
-SHODAN_API_KEY="your_key"  # Required
+CDN_BYPASS=true
 ```
 
 ---
@@ -491,13 +506,17 @@ IPV6_SCAN=true
 |------|---------|
 | `hosts/ips.txt` | All resolved IP addresses |
 | `hosts/cdn.txt` | IPs identified as CDN |
+| `hosts/cdn_providers.txt` | CDN/WAF classification output from cdncheck |
+| `hosts/origin_ips.txt` | Origin IP candidates (when `CDN_BYPASS=true`) |
 | `hosts/portscan_passive.txt` | Shodan port results |
+| `hosts/naabu_open.txt` | Open ports discovered by naabu (when `PORTSCAN_STRATEGY=naabu_nmap`) |
 | `hosts/portscan_active.txt` | Nmap scan results |
 | `hosts/portscan_active.xml` | Nmap XML output |
 | `hosts/portscan_active.gnmap` | Nmap greppable output |
+| `hosts/portscan_active_targeted.xml` | Targeted Nmap XML output (when `PORTSCAN_STRATEGY=naabu_nmap`) |
+| `hosts/portscan_active_udp.xml` | UDP Nmap XML output (when `PORTSCAN_UDP=true`) |
 | `hosts/waf.txt` | WAF detection results |
 | `hosts/geo.txt` | Geolocation data |
-| `hosts/favicontest.txt` | Favicon real IP discovery |
 | `hosts/grpc_reflection.txt` | gRPC services with reflection |
 | `subdomains/cloud_extra.txt` | Extra cloud storage findings |
 
@@ -508,9 +527,9 @@ IPV6_SCAN=true
 Host analysis results feed into vulnerability scanning:
 
 1. **Port scan results** → Password spraying targets
-2. **Service versions** → CVE matching (vulners script)
-3. **Non-CDN IPs** → Focus active testing
-4. **WAF detection** → Adjust attack strategies
+2. **Service versions** → Optional CVE enrichment (deep profile via `PORTSCAN_DEEP_OPTIONS`)
+3. **Non-CDN IPs + origin candidates** → Focus active testing on likely real infrastructure
+4. **WAF detection** → Adjust rate limits/attack strategies
 
 ---
 

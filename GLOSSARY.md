@@ -265,7 +265,7 @@ JavaScript vulnerability where attacker modifies Object prototype.
 Intermediary server for routing traffic (e.g., Burp Suite).
 
 ### Puredns
-Fast DNS resolution tool with wildcard filtering.
+Fast DNS resolution tool (massdns backend) with wildcard filtering. reconFTW can also use `dnsx` for NAT-friendly resolution when configured/selected.
 
 ---
 

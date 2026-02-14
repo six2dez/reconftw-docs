@@ -156,16 +156,19 @@ plugins_register "my-plugin" "after_subdomains,after_scan"
 ```bash
 # In reconftw.cfg
 
+# Wordlists are shipped under ${WORDLISTS_DIR} by default.
+# You can override any wordlist to point to your own file (any path).
+
 # Custom subdomain wordlists
-subs_wordlist="$SCRIPTPATH/wordlists/custom_subdomains.txt"
-subs_wordlist_big="$SCRIPTPATH/wordlists/custom_subdomains_big.txt"
+subs_wordlist="/path/to/custom_subdomains.txt"
+subs_wordlist_big="/path/to/custom_subdomains_big.txt"
 
 # Custom directory wordlists
-fuzz_wordlist="$SCRIPTPATH/wordlists/custom_dirs.txt"
+fuzz_wordlist="/path/to/custom_dirs.txt"
 
 # Optional vuln-specific wordlists
-lfi_wordlist="$SCRIPTPATH/wordlists/custom_lfi.txt"
-ssti_wordlist="$SCRIPTPATH/wordlists/custom_ssti.txt"
+lfi_wordlist="/path/to/custom_lfi.txt"
+ssti_wordlist="/path/to/custom_ssti.txt"
 ```
 
 ### Generating Custom Wordlists
@@ -184,14 +187,13 @@ awk 'length($0) >= 3 && length($0) <= 20' wordlist.txt > filtered.txt
 ### Per-Target Wordlists
 
 ```bash
-# Create target-specific wordlist directory
-mkdir -p wordlists/example.com/
+# Create a target-specific config and pass it with -f
+cat > config/example.com.cfg <<'EOF'
+subs_wordlist="/path/to/example.com_subdomains.txt"
+fuzz_wordlist="/path/to/example.com_fuzzing.txt"
+EOF
 
-# Place custom wordlists
-cp custom_subs.txt wordlists/example.com/subdomains.txt
-cp custom_dirs.txt wordlists/example.com/fuzzing.txt
-
-# reconFTW will use if present
+./reconftw.sh -d example.com -r -f config/example.com.cfg
 ```
 
 ---
@@ -202,31 +204,23 @@ cp custom_dirs.txt wordlists/example.com/fuzzing.txt
 
 ```bash
 # Validate resolvers
-dnsvalidator -tL public_resolvers.txt -threads 100 -o resolvers.txt
+dnsvalidator -tL public_resolvers.txt -threads 100 -o /path/to/resolvers.txt
 
 # Use validated resolvers
-RESOLVERS="$SCRIPTPATH/resolvers.txt"
+resolvers="/path/to/resolvers.txt"
 ```
 
 ### Trusted Resolvers
 
 ```bash
 # Trusted resolvers (for sensitive queries)
-RESOLVERS_TRUSTED="$SCRIPTPATH/resolvers_trusted.txt"
+resolvers_trusted="/path/to/resolvers_trusted.txt"
 
 # Contents: reliable, trusted DNS servers
 8.8.8.8
 8.8.4.4
 1.1.1.1
 9.9.9.9
-```
-
-### Resolver Rotation
-
-```bash
-# Enable resolver rotation
-RESOLVER_ROTATE=true
-RESOLVER_ROTATE_INTERVAL=100  # Rotate every 100 queries
 ```
 
 ---
@@ -290,6 +284,7 @@ QUICK_RESCAN=false         # Skip heavy stages when nothing new
 MONITOR_MODE=false         # Enable with --monitor
 MONITOR_INTERVAL_MIN=60
 MONITOR_MAX_CYCLES=0       # 0 = infinite
+MONITOR_MIN_SEVERITY=high  # critical|high|medium|low|info
 ALERT_SUPPRESSION=true
 ALERT_SEEN_FILE=".incremental/alerts_seen.hashes"
 ```

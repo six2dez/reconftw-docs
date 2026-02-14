@@ -49,7 +49,6 @@ This page documents the tools currently integrated in reconFTW.
 | `dnsx` | DNS resolution and records |
 | `puredns` | High-scale DNS resolution/bruteforce |
 | `gotator` | Permutation generation |
-| `ripgen` | Fast permutation generation |
 | `subwiz` | AI permutation generation |
 | `regulator` | Regex-based permutations |
 | `urlfinder` | Passive URL/subdomain source |
@@ -72,7 +71,6 @@ This page documents the tools currently integrated in reconFTW.
 | `httpx` | HTTP probing and metadata |
 | `nuclei` | Screenshot module and web checks |
 | `VhostFinder` | Virtual host discovery |
-| `fav-up` | Favicon-based real IP lookup |
 | `favirecon` | Favicon-based technology fingerprinting |
 | `katana` | Active crawling |
 | `github-endpoints` | Endpoints from GitHub |
@@ -86,9 +84,9 @@ This page documents the tools currently integrated in reconFTW.
 | `mantra` | JS secret hunting |
 | `ffuf` | Directory and endpoint fuzzing |
 | `CMSeeK` | CMS fingerprinting |
-| `pydictor` | Password dictionary generation |
+| `cewl` | Password dictionary generation from live content (Ruby gem) |
+| `pydictor` | Password dictionary generation (legacy/optional fallback) |
 | `shortscan` | IIS shortname detection |
-| `sns` | IIS shortname checks |
 | `gqlspection` | GraphQL analysis |
 | `arjun` | Parameter discovery |
 | `grpcurl` | gRPC reflection probing |
@@ -101,9 +99,11 @@ This page documents the tools currently integrated in reconFTW.
 | Tool | Purpose |
 |------|---------|
 | `smap` | Passive port intelligence |
+| `naabu` | Fast TCP port discovery (pre-discovery stage) |
 | `nmap` | Active port scanning |
 | `nmapurls` | URL extraction from Nmap XML |
 | `cdncheck` | CDN provider detection |
+| `hakoriginfinder` | Origin IP discovery for CDN-fronted hosts (best-effort) |
 | `wafw00f` | WAF detection |
 
 ---
@@ -115,8 +115,6 @@ This page documents the tools currently integrated in reconFTW.
 | `dalfox` | XSS testing |
 | `Gxss` | Reflected parameter identification |
 | `qsreplace` | Parameter mutation for payload injection |
-| `Corsy` | CORS misconfiguration checks |
-| `Oralyzer` | Open redirect checks |
 | `interactsh-client` | OOB callbacks for blind vulns |
 | `crlfuzz` | CRLF injection checks |
 | `interlace` | Parallelized target execution |
@@ -127,7 +125,6 @@ This page documents the tools currently integrated in reconFTW.
 | `brutespray` | Password spraying |
 | `commix` | Command injection checks |
 | `nomore403` | 403/401 bypass checks |
-| `ppmap` | Prototype pollution checks |
 | `smugglex` | HTTP request smuggling checks |
 | `Web-Cache-Vulnerability-Scanner` | Web cache poisoning checks |
 | `toxicache` | Complementary web cache poisoning checks |

@@ -11,12 +11,12 @@ The subdomain enumeration module is the cornerstone of reconFTW, discovering all
 | `sub_passive` | Passive | API-based subdomain discovery | subfinder, github-subdomains |
 | `sub_crt` | Passive | Certificate transparency logs | crt.sh |
 | `sub_noerror` | Active | DNS NOERROR response analysis | dnsx |
-| `sub_brute` | Active | DNS bruteforce with wordlists | puredns |
-| `sub_permut` | Active | Permutation generation | gotator, ripgen |
+| `sub_brute` | Active | DNS bruteforce with wordlists | puredns, dnsx |
+| `sub_permut` | Active | Permutation generation | gotator |
 | `sub_ia_permut` | Active | AI-powered permutations | subwiz |
 | `sub_regex_permut` | Active | Regex-based permutations | regulator |
 | `sub_recursive_passive` | Passive | Recursive passive enum | subfinder |
-| `sub_recursive_brute` | Active | Recursive bruteforce | puredns |
+| `sub_recursive_brute` | Active | Recursive bruteforce | puredns, dnsx |
 | `sub_scraping` | Semi-active | Subdomain extraction from passive URLs and live web data | urlfinder, waymore, httpx, csprecon |
 | `sub_analytics` | Passive | Google Analytics correlation | AnalyticsRelationships |
 | `sub_tls` | Active | TLS certificate discovery | tlsx |
@@ -66,9 +66,16 @@ S3BUCKETS=true               # S3 enumeration
 REVERSE_IP=false             # Enable for IP targets
 INSCOPE=false                # Scope filtering
 
-# Permutation options
-PERMUTATIONS_OPTION=gotator  # or "ripgen"
-GOTATOR_FLAGS=" -depth 1 -numbers 3 -mindup -adv -md"
+	# Permutation options
+	PERMUTATIONS_ENGINE=gotator
+	PERMUTATIONS_WORDLIST_MODE=auto      # auto|full|short
+	PERMUTATIONS_SHORT_THRESHOLD=100
+	GOTATOR_FLAGS=" -depth 1 -numbers 3 -mindup -adv -md"
+
+	# DNS resolver selection for brute/permut resolve steps
+	DNS_RESOLVER=auto                    # auto|puredns|dnsx
+	DNSX_THREADS=25
+	DNSX_RATE_LIMIT=100
 ```
 
 ---
@@ -240,13 +247,13 @@ Performs DNS bruteforce using wordlists to discover subdomains.
 **How It Works:**
 
 ```
-Wordlist → Generate DNS queries → puredns (with resolvers) →
-→ Filter wildcards → Validate responses → subdomains_brute.txt
+Wordlist → Generate DNS queries → DNS resolver (puredns or dnsx) →
+→ Filter wildcards / validate responses → subdomains_brute.txt
 ```
 
 **Wordlists Used:**
-- Standard: `$subs_wordlist` (~10k entries)
-- Deep mode: `$subs_wordlist_big` (~100k+ entries)
+- Standard: `$subs_wordlist` (built-in list under `data/wordlists/`)
+- Deep mode: `$subs_wordlist_big` (optional larger list; downloaded by installer)
 
 **Output:**
 ```
@@ -256,8 +263,13 @@ subdomains/subdomains_brute.txt
 **Configuration:**
 ```bash
 SUBBRUTE=true
-subs_wordlist=${tools}/subdomains.txt
+subs_wordlist=${WORDLISTS_DIR}/subdomains.txt
 subs_wordlist_big=${tools}/subdomains_n0kovo_big.txt
+
+# DNS resolver selection
+DNS_RESOLVER=auto           # auto|puredns|dnsx
+DNSX_THREADS=25
+DNSX_RATE_LIMIT=100
 
 # PureDNS settings
 PUREDNS_PUBLIC_LIMIT=0        # 0 = unlimited
@@ -368,15 +380,14 @@ Generates subdomain variations from discovered subdomains.
 - Word insertion: `api-internal`, `api-test`
 - Number variations: `api1`, `api2`, `api3`
 
-**Tools:**
-- **gotator**: Deep permutations (slower, more thorough)
-- **ripgen**: Fast permutations (faster, less thorough)
+**Tool:**
+- **gotator**: permutation generation using built-in permutation wordlists.
 
 **How It Works:**
 
 ```
-Known subdomains → gotator/ripgen → Generate permutations →
-→ puredns (resolve) → Filter valid → Output
+Known subdomains → gotator → Generate permutations →
+→ DNS resolver (puredns or dnsx) → Filter valid → Output
 ```
 
 **Output:**
@@ -387,9 +398,16 @@ subdomains/subdomains_permut.txt
 **Configuration:**
 ```bash
 SUBPERMUTE=true
-PERMUTATIONS_OPTION=gotator  # or "ripgen"
+PERMUTATIONS_ENGINE=gotator
+PERMUTATIONS_WORDLIST_MODE=auto      # auto|full|short
+PERMUTATIONS_SHORT_THRESHOLD=100
 GOTATOR_FLAGS=" -depth 1 -numbers 3 -mindup -adv -md"
 PERMUTATIONS_LIMIT=21474836480  # Max file size (20GB)
+
+# DNS resolver selection for permutation resolution
+DNS_RESOLVER=auto                    # auto|puredns|dnsx
+DNSX_THREADS=25
+DNSX_RATE_LIMIT=100
 ```
 
 ---

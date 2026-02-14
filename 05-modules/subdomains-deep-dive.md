@@ -14,7 +14,7 @@ Phase 1: Passive Sources (no target contact)
 └── sub_crt       → Certificate Transparency logs
 
 Phase 2: DNS Resolution (validates passive results)
-├── sub_active    → Resolve collected subdomains with puredns
+├── sub_active    → Resolve collected subdomains (puredns or dnsx)
 ├── sub_noerror   → DNSSEC NOERROR response analysis
 └── sub_dns       → DNS record extraction
 
@@ -24,7 +24,7 @@ Phase 3: Post-Resolution Analysis (requires resolved subdomains)
 
 Phase 4: Bruteforce (resource intensive)
 ├── sub_brute         → DNS bruteforce with wordlists
-├── sub_permut        → Permutation generation (gotator/ripgen)
+├── sub_permut        → Permutation generation (gotator)
 ├── sub_regex_permut  → Regex-based pattern permutations
 └── sub_ia_permut     → AI-powered permutation generation
 
@@ -92,7 +92,9 @@ crt -s -json -l "${CTR_LIMIT}" "$domain" \
 
 Resolves all collected subdomains to filter non-existent ones.
 
-**Tool used:** `puredns` with massdns backend
+**Resolver used:** `puredns` (massdns backend) or `dnsx`
+
+reconFTW selects one resolver mode per run (see `DNS_RESOLVER`) and uses it consistently across all resolution and bruteforce steps.
 
 **Process:**
 1. Combine all passive results into single file
@@ -102,10 +104,16 @@ Resolves all collected subdomains to filter non-existent ones.
 
 **Wildcard handling:**
 ```bash
+# puredns mode (best wildcard handling, recommended on public networks)
 puredns resolve input.txt \
     --wildcard-tests 30 \
     --wildcard-batch 1500000 \
     -r "$resolvers_trusted"
+
+# dnsx mode (NAT-friendly, basic wildcard threshold filtering)
+dnsx -l input.txt -silent -retry 2 \
+    -t "$DNSX_THREADS" -rl "$DNSX_RATE_LIMIT" \
+    -r "$resolvers_trusted" -wt 5
 ```
 
 **Why wildcard detection matters:**
@@ -180,11 +188,11 @@ Requires web-accessible hosts to extract analytics IDs.
 
 DNS bruteforce using wordlists.
 
-**Tool used:** `puredns` with optimized wordlists
+**Resolver used:** `puredns` or `dnsx`
 
 **Wordlist strategy:**
-- Default: `~100K` common subdomain names
-- DEEP mode: `~1M+` extended wordlist
+- Default: `subs_wordlist` (configured wordlist)
+- DEEP mode: `subs_wordlist_big` (extended wordlist, if installed)
 
 **When useful:**
 - New subdomains not yet indexed by passive sources
@@ -195,7 +203,7 @@ DNS bruteforce using wordlists.
 
 Generates permutations based on discovered subdomains.
 
-**Tool used:** `gotator` or `ripgen`
+**Tool used:** `gotator`
 
 **Example:**
 ```
@@ -210,8 +218,9 @@ Generates:
 
 **Configuration:**
 ```bash
-PERMUTATIONS_OPTION=gotator  # Deeper but slower
-PERMUTATIONS_OPTION=ripgen   # Faster but less thorough
+PERMUTATIONS_ENGINE=gotator
+PERMUTATIONS_WORDLIST_MODE=auto      # auto|full|short
+PERMUTATIONS_SHORT_THRESHOLD=100
 ```
 
 ### sub_regex_permut

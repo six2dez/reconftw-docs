@@ -25,8 +25,8 @@ NUCLEI_RATELIMIT=100
 
 # Enable all checks
 NUCLEICHECK=true
+NUCLEI_DAST=true
 FUZZ=true
-CORS=true
 XSS=true
 SQLI=true
 
@@ -53,13 +53,14 @@ FUZZ=true
 XSS=true
 SQLI=true
 
-# Skip some heavy checks
-SMUGGLING=false
-WEBCACHE=false
-PROTOTYPE_POLLUTION=false
+  # Skip some heavy checks
+  SMUGGLING=false
+  WEBCACHE=false
+  # Nuclei DAST runs as part of the vuln pipeline (-a / VULNS_GENERAL=true).
+  # To reduce impact, tune NUCLEI_RATELIMIT and/or DEEP_LIMIT2 instead of disabling it.
 
-# Time estimate: 2-4 hours
-```
+  # Time estimate: 2-4 hours
+  ```
 
 ### Large Target (1,000-10,000 subdomains)
 
@@ -81,15 +82,13 @@ FUZZ=false          # Too slow for large targets
 XSS=true
 SQLI=false          # Use nuclei SQLi templates instead
 
-# Skip slow modules
-SMUGGLING=false
-WEBCACHE=false
-PROTOTYPE_POLLUTION=false
-GRAPHQL_SCAN=false
-WEBSOCKET_CHECKS=false
+  # Skip slow modules
+  SMUGGLING=false
+  WEBCACHE=false
+  GRAPHQL_CHECK=false
 
-# Time estimate: 4-8 hours
-```
+  # Time estimate: 4-8 hours
+  ```
 
 ### Massive Target (10,000+ subdomains)
 
@@ -105,16 +104,17 @@ HTTPX_THREADS=200
 FFUF_THREADS=100
 NUCLEI_RATELIMIT=300
 
-# Only nuclei scanning
-NUCLEICHECK=true
-FUZZ=false
-XSS=false
-SQLI=false
-SSRF_CHECKS=false
-CORS=false
+  # Only nuclei scanning
+  NUCLEICHECK=true
+  FUZZ=false
+  XSS=false
+  SQLI=false
+  SSRF_CHECKS=false
+  # Nuclei DAST runs as part of the vuln pipeline (-a / VULNS_GENERAL=true).
+  # For speed, keep VULNS_GENERAL=false and run recon-only, or tune NUCLEI_RATELIMIT/DEEP_LIMIT2.
 
-# Use Axiom for distribution
-AXIOM=true
+  # Use Axiom for distribution
+  AXIOM=true
 AXIOM_FLEET_COUNT=20
 
 # Time estimate: 8-24 hours (or 2-4 with Axiom)
@@ -306,34 +306,36 @@ NUCLEI_TIMEOUT=30
 
 ### Subdomain Wordlists
 
-| Wordlist | Size | Use When |
-|----------|------|----------|
-| `subdomains.txt` (default) | ~100K | Standard scans |
-| `subdomains_n0kovo_big.txt` | ~1M | DEEP mode / thorough |
-| Custom small list | ~10K | Fast scans / CI/CD |
+| Setting / Wordlist | Default | Use When |
+|-------------------|---------|----------|
+| `subs_wordlist` | `${WORDLISTS_DIR}/subdomains.txt` | Standard scans |
+| `subs_wordlist_big` | `${tools}/subdomains_n0kovo_big.txt` | DEEP mode / thorough (if installed) |
+| Custom small list | (any path) | Fast scans / CI/CD |
 
 ```bash
-# Fast scan - small wordlist
-subs_wordlist="${tools}/subdomains_small.txt"
+# Fast scan - use a small custom list
+subs_wordlist="/path/to/subdomains_small.txt"
 
-# Thorough scan - large wordlist
-subs_wordlist="${tools}/subdomains_n0kovo_big.txt"
+# Default (bundled)
+subs_wordlist="${WORDLISTS_DIR}/subdomains.txt"
+
+# DEEP mode uses this list (override if you want a different "big" list)
+subs_wordlist_big="${tools}/subdomains_n0kovo_big.txt"
 ```
 
 ### Fuzzing Wordlists
 
-| Wordlist | Size | Time Impact |
-|----------|------|-------------|
-| Small (~5K) | Fast | 5-10 min/target |
-| Medium (~20K) | Moderate | 20-40 min/target |
-| Large (~100K+) | Slow | 1-2 hours/target |
+| Setting / Wordlist | Default | Use When |
+|-------------------|---------|----------|
+| `fuzz_wordlist` | `${WORDLISTS_DIR}/fuzz_wordlist.txt` | Standard directory fuzzing |
+| Custom small list | (any path) | Faster fuzzing |
 
 ```bash
-# Fast fuzzing
-fuzz_wordlist="${tools}/fuzz_small.txt"
+# Fast fuzzing - use a small custom list
+fuzz_wordlist="/path/to/fuzz_small.txt"
 
-# Thorough fuzzing  
-fuzz_wordlist="${tools}/fuzz_wordlist.txt"
+# Thorough fuzzing - use the bundled list
+fuzz_wordlist="${WORDLISTS_DIR}/fuzz_wordlist.txt"
 ```
 
 ### Recommended Wordlists
@@ -392,12 +394,12 @@ FUZZ=false  # Skip entirely, rely on nuclei
 
 # Or minimal fuzzing
 FFUF_THREADS=20
-fuzz_wordlist="${tools}/fuzz_small.txt"
+fuzz_wordlist="/path/to/fuzz_small.txt"
 
 # Thorough
 FUZZ=true
 FFUF_THREADS=80
-fuzz_wordlist="${tools}/fuzz_wordlist.txt"
+fuzz_wordlist="${WORDLISTS_DIR}/fuzz_wordlist.txt"
 ```
 
 ---

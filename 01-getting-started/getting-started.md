@@ -59,12 +59,12 @@ cd reconftw
 echo 1 | ./install.sh
 ```
 
-The installer will:
-1. Check system requirements
-2. Install Go, Rust, and Python dependencies
-3. Install 80+ security tools
-4. Configure PATH and environment variables
-5. Download required wordlists and resolvers
+	The installer will:
+	1. Check system requirements
+	2. Install Go, Rust, and Python dependencies
+	3. Install 80+ security tools
+	4. Configure PATH and environment variables
+	5. Download resolver lists (public/trusted) and optional external lists used by some modules
 
 > **⏱️ Installation Time**: 15-45 minutes depending on internet speed and system resources.
 

@@ -329,6 +329,27 @@ https://example.com/callback?url=FUZZ
 
 ---
 
+### cdn_providers.txt
+
+**Content:** Raw CDN/WAF classification output from `cdncheck` (best-effort hints).
+
+```
+93.184.216.34 [cloudflare] [waf]
+```
+
+---
+
+### origin_ips.txt
+
+**Content:** Origin IP candidates discovered when `CDN_BYPASS=true` (via `hakoriginfinder`).
+
+```
+203.0.113.10
+203.0.113.11
+```
+
+---
+
 ### portscan_passive.txt
 
 **Content:** Port scan results from Shodan.
@@ -343,6 +364,18 @@ https://example.com/callback?url=FUZZ
 
 ---
 
+### naabu_open.txt
+
+**Content:** Open ports discovered by `naabu` when `PORTSCAN_STRATEGY=naabu_nmap`.
+
+```
+93.184.216.34:22
+93.184.216.34:80
+93.184.216.34:443
+```
+
+---
+
 ### portscan_active.txt
 
 **Content:** Active nmap scan results.
@@ -353,12 +386,12 @@ https://example.com/callback?url=FUZZ
 Nmap scan report for 93.184.216.34
 PORT      STATE SERVICE    VERSION
 22/tcp    open  ssh        OpenSSH 8.2p1 Ubuntu
-| vulners: 
-|   CVE-2020-15778  6.8
 80/tcp    open  http       nginx 1.18.0
 443/tcp   open  ssl/https  nginx 1.18.0
 | ssl-cert: Subject: CN=example.com
 ```
+
+> Note: CVE enrichment via `--script vulners` is optional (typically enabled only in deep portscan profiles).
 
 ---
 
@@ -380,6 +413,18 @@ PORT      STATE SERVICE    VERSION
 ```
 Host: 93.184.216.34 () Ports: 22/open/tcp//ssh//OpenSSH 8.2p1/, 80/open/tcp//http//nginx 1.18.0/, 443/open/tcp//https//
 ```
+
+---
+
+### portscan_active_targeted.xml
+
+**Content:** Targeted Nmap XML output when `PORTSCAN_STRATEGY=naabu_nmap`.
+
+---
+
+### portscan_active_udp.xml
+
+**Content:** UDP Nmap XML output when `PORTSCAN_UDP=true`.
 
 ---
 
@@ -563,14 +608,12 @@ Email Spoofing: PROTECTED (moderate)
 
 ### nuclei_output/
 
-**Content:** Nuclei scan results in JSON format.
+**Content:** Nuclei scan results (JSONL + human-readable summaries).
 
 **Files:**
-- `critical_json.txt`
-- `nuclei_high.json`
-- `nuclei_medium.json`
-- `nuclei_low.json`
-- `nuclei_info.json`
+- `critical_json.txt`, `high_json.txt`, `medium_json.txt`, `low_json.txt`, `info_json.txt`
+- `critical.txt`, `high.txt`, `medium.txt`, `low.txt`, `info.txt`
+- `dast_json.txt` (DAST pass JSONL)
 
 **Sample JSON:**
 ```json
@@ -626,42 +669,27 @@ Email Spoofing: PROTECTED (moderate)
 
 ---
 
-### ssrf.txt
+### nuclei_dast.txt
 
-**Content:** SSRF vulnerability findings.
-
-```
-[VULNERABLE] https://example.com/fetch?url=http://169.254.169.254
-  Parameter: url
-  Type: Blind SSRF
-  Evidence: Delayed response / OOB callback
-```
+**Content:** Human-readable Nuclei DAST findings (produced by `nuclei_dast`).
 
 ---
 
-### cors.txt
+### ssrf_requested.txt / ssrf_requested_headers.txt
 
-**Content:** CORS misconfiguration findings.
-
-```
-[MISCONFIGURED] https://api.example.com
-  Issue: Arbitrary Origin Reflection
-  ACAO: *
-  ACAC: true
-  Impact: Credential theft possible
-```
+**Content:** SSRF candidates tested (callback payloads in URL parameters and headers).
 
 ---
 
-### redirect.txt
+### ssrf_callback.txt
 
-**Content:** Open redirect findings.
+**Content:** OOB callback events received during SSRF checks (when using interactsh).
 
-```
-[VULNERABLE] https://example.com/redirect?url=https://evil.com
-  Parameter: url
-  Redirects to: https://evil.com
-```
+---
+
+### ssrf_alt_protocols.txt
+
+**Content:** Alternate protocol SSRF results (content-match based, payloads from `config/ssrf_payloads.txt`).
 
 ---
 
@@ -839,7 +867,6 @@ Recon/example.com/.log/perf_summary.json
 ```
 [2026-02-12 15:31:03] NOTE @ apileaks:213 :: porch-pirate --dump failed; retrying without --dump
 [2026-02-12 15:31:21] NOTE @ apileaks:264 :: apileaks: postleaksNg failed
-[2026-02-12 15:33:17] NOTE @ favicon:374 :: favicon: fav-up failed or timed out; skipping
 [2026-02-12 15:41:08] NOTE @ favirecon_tech:455 :: favirecon_tech: favirecon command failed
 [2026-02-12 15:53:09] WARN @ sub_asn :: PDCP_API_KEY not set, ASN enumeration skipped
 ```
@@ -957,6 +984,7 @@ In clean parallel UI mode, `Queue:` is suppressed when pending count is `0`.
 - `matched-at`: Exact vulnerable endpoint
 - `extracted-results`: Evidence of vulnerability
 - `curl-command`: Reproduction command
+- `scan_scope`: reconFTW scan context (currently `dast` for `nuclei_output/dast_json.txt`)
 
 ---
 

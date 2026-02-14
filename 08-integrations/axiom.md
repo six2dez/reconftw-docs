@@ -264,11 +264,8 @@ axiom-exec "dnsvalidator -tL public-resolvers.txt -threads 100 -o resolvers.txt"
 
 ```bash
 # In reconftw.cfg
-RESOLVERS_TRUSTED="/home/op/lists/resolvers_trusted.txt"
-RESOLVERS="/home/op/lists/resolvers.txt"
-
-# On fleet
 AXIOM_RESOLVERS_PATH="/home/op/lists/resolvers.txt"
+AXIOM_RESOLVERS_TRUSTED_PATH="/home/op/lists/resolvers_trusted.txt"
 ```
 
 ---

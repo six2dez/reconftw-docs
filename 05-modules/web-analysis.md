@@ -41,8 +41,8 @@ Before scanning for vulnerabilities, you need to understand what you're scanning
 | `cms_scanner` | CMS detection | CMSeeK |
 | `wordlist_gen` | Custom wordlist generation | custom |
 | `wordlist_gen_roboxtractor` | Robots.txt wordlist | roboxtractor |
-| `password_dict` | Password dictionary generation | pydictor |
-| `iishortname` | IIS shortname scanning | shortscan, sns |
+| `password_dict` | Password dictionary generation | cewl (default), pydictor (legacy/optional) |
+| `iishortname` | IIS shortname scanning | shortscan |
 | `graphql_scan` | GraphQL endpoint detection | nuclei, GQLSpection |
 | `grpc_reflection` | gRPC reflection probing | grpcurl |
 | `param_discovery` | Parameter discovery | arjun |
@@ -74,6 +74,8 @@ WAYMORE_TIMEOUT=30m            # Timeout for waymore passive collection
 WAYMORE_LIMIT=5000             # Optional waymore URL collection limit
 URL_GF=true                    # Pattern matching
 URL_EXT=true                   # Extension sorting
+KATANA_HEADLESS_PROFILE=off    # off|smart|full
+KATANA_HEADLESS_SMART_LIMIT=15
 
 # JavaScript
 JSCHECKS=true                  # JS analysis
@@ -85,6 +87,7 @@ FFUF_THREADS=40
 FFUF_RATELIMIT=0
 FFUF_MAXTIME=900
 FFUF_FLAGS=" -mc all -fc 404 -sf -noninteractive -of json"
+FUZZ_RECURSION_DEPTH=2         # ffuf recursion depth used in DEEP mode only
 
 # CMS
 CMS_SCANNER=true
@@ -94,6 +97,10 @@ CMSSCAN_TIMEOUT=3600
 WORDLIST=true
 ROBOTSWORDLIST=true            # Robots.txt wordlist generation
 PASSWORD_DICT=true             # Password dictionary generation
+PASSWORD_DICT_ENGINE=cewl      # cewl|pydictor
+PASSWORD_DICT_MAX_TARGETS=50   # When not DEEP, cap number of targets cewl crawls
+PASSWORD_DICT_CEWL_DEPTH=1
+PASSWORD_DICT_CEWL_TIMEOUT=45
 PASSWORD_MIN_LENGTH=5          # Min password length
 PASSWORD_MAX_LENGTH=14         # Max password length
 IIS_SHORTNAME=true
@@ -304,6 +311,10 @@ Collects URLs from multiple sources for full coverage.
 - JavaScript parsing
 - Sitemap analysis
 
+**Headless Crawling (Optional):**
+- Configure `KATANA_HEADLESS_PROFILE=off|smart|full`.
+- `smart` enables headless only when the target set is small; `full` enables it for all targets.
+
 **How It Works:**
 
 ```
@@ -485,6 +496,9 @@ webs.txt → ffuf (with wordlist) → Filter responses →
 → Identify interesting paths → Output
 ```
 
+**DEEP Mode Behavior:**
+- When `DEEP=true`, reconFTW enables ffuf recursion (`-recursion`) with depth controlled by `FUZZ_RECURSION_DEPTH`.
+
 **Wordlists:**
 - Primary: `$fuzz_wordlist`
 - Custom generated from target
@@ -508,11 +522,12 @@ fuzzing/
 **Configuration:**
 ```bash
 FUZZ=true
+FUZZ_RECURSION_DEPTH=2   # Used only when DEEP=true
 FFUF_THREADS=40
 FFUF_RATELIMIT=0
 FFUF_MAXTIME=900
 FFUF_FLAGS=" -mc all -fc 404 -sf -noninteractive -of json"
-fuzz_wordlist=${tools}/fuzz_wordlist.txt
+fuzz_wordlist=${WORDLISTS_DIR}/fuzz_wordlist.txt
 ```
 
 ---
@@ -710,40 +725,41 @@ ROBOTSWORDLIST=true
 
 ### `password_dict` - Password Dictionary Generation
 
-Generates target-specific password lists based on the domain name.
+Generates target-specific password lists from live web content.
 
 **How It Works:**
 
 ```
-Domain name → Extract keywords → pydictor →
-→ Apply leetspeak variations → Password wordlist
+webs/webs_all.txt → cewl (crawl) → word candidates →
+→ Apply length constraints → webs/password_dict.txt
 ```
 
-The function takes the first part of the domain (e.g., "target" from "target.com") and generates password variations using:
-- Leetspeak transformations (a→4, e→3, etc.)
-- Common suffixes (123, !, 2024, etc.)
-- Length constraints
+By default the engine is `cewl`, which extracts words from HTML pages. When `DEEP=false`, the number of targets crawled is capped (`PASSWORD_DICT_MAX_TARGETS`) to keep runtime predictable.
+
+**Requirements:**
+- `cewl` must be installed (Ruby gem).
 
 **Output:**
 ```
 webs/password_dict.txt
 ```
 
-**Sample Output (for target.com):**
+**Sample Output:**
 ```
-target
-Target
-TARGET
-t4rget
-targ3t
-target123
-Target2024!
-T4rg3t!
+login
+portal
+support
+admin
+internal
 ```
 
 **Configuration:**
 ```bash
 PASSWORD_DICT=true
+PASSWORD_DICT_ENGINE=cewl
+PASSWORD_DICT_MAX_TARGETS=50
+PASSWORD_DICT_CEWL_DEPTH=1
+PASSWORD_DICT_CEWL_TIMEOUT=45
 PASSWORD_MIN_LENGTH=5      # Minimum password length
 PASSWORD_MAX_LENGTH=14     # Maximum password length
 ```

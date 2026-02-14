@@ -280,7 +280,7 @@ reconFTW integrates specific tools for each task:
 | Task | Tool | Why This Tool |
 |------|------|---------------|
 | Passive subdomains | subfinder | 50+ sources, fast, maintained |
-| DNS resolution | puredns + massdns | Fastest resolver with wildcard filtering |
+| DNS resolution | puredns (massdns backend) or dnsx | Fast resolution with wildcard filtering; NAT-friendly mode when needed |
 | HTTP probing | httpx | Feature-rich, handles edge cases |
 | Screenshots | webscreenshot | Headless Chrome, reliable |
 | Port scanning | nmap | Industry standard, scriptable |

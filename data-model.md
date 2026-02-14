@@ -103,8 +103,13 @@ Recon/example.com/
 ├── hosts/                   # Host/IP information
 │   ├── ips.txt              # [KEY] Resolved IP addresses
 │   ├── cdn.txt              # CDN IPs (filtered)
+│   ├── cdn_providers.txt    # CDN/WAF classification output from cdncheck
+│   ├── origin_ips.txt       # Origin IP candidates (when CDN_BYPASS=true)
+│   ├── naabu_open.txt       # naabu open ports (when PORTSCAN_STRATEGY=naabu_nmap)
 │   ├── portscan_active.txt  # Open ports
-│   └── portscan_active.xml  # Nmap XML output
+│   ├── portscan_active.xml  # Nmap XML output
+│   ├── portscan_active_targeted.xml  # Targeted Nmap XML output (when PORTSCAN_STRATEGY=naabu_nmap)
+│   └── portscan_active_udp.xml       # UDP Nmap XML output (when PORTSCAN_UDP=true)
 │
 ├── osint/                   # OSINT results
 │   ├── dorks.txt            # Google dork results
@@ -119,13 +124,17 @@ Recon/example.com/
 │   ├── low.txt / low_json.txt
 │   ├── medium.txt / medium_json.txt
 │   ├── high.txt / high_json.txt
-│   └── critical_json.txt
+│   ├── critical.txt / critical_json.txt
+│   └── dast_json.txt
 │
 ├── vulns/                   # Additional vulnerability findings
 │   ├── xss.txt              # XSS vulnerabilities
 │   ├── sqli.txt             # SQL injection
-│   ├── cors.txt             # CORS misconfigs
-│   ├── ssrf.txt             # SSRF findings
+│   ├── nuclei_dast.txt       # Nuclei DAST findings (human-readable)
+│   ├── ssrf_requested.txt    # SSRF candidates tested (URL params)
+│   ├── ssrf_requested_headers.txt # SSRF candidates tested (headers)
+│   ├── ssrf_callback.txt     # SSRF callbacks received (OOB)
+│   ├── ssrf_alt_protocols.txt # SSRF alternate protocol findings
 │   └── ...                  # Other vuln types
 │
 ├── js/                      # JavaScript analysis

@@ -59,8 +59,19 @@ Use them with:
 # Path where tools are installed
 tools=$HOME/Tools
 
-# Auto-detected script path (don't change)
-SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+# Auto-detected script path (do not set manually in normal usage)
+if [[ -z "${SCRIPTPATH:-}" ]]; then
+  if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+    SCRIPTPATH="$( cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 ; pwd -P )"
+  else
+    SCRIPTPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+  fi
+fi
+
+# Built-in data shipped with reconFTW
+DATA_DIR="${SCRIPTPATH}/data"
+WORDLISTS_DIR="${DATA_DIR}/wordlists"
+PATTERNS_DIR="${DATA_DIR}/patterns"
 ```
 
 ### Shell Configuration
@@ -331,8 +342,12 @@ EXCLUDE_SENSITIVE=false  # Scan all domains (default)
 ### Permutation Settings
 
 ```bash
-# Permutation tool: "gotator" (deeper) or "ripgen" (faster)
-PERMUTATIONS_OPTION=gotator
+# Permutation engine (gotator-only)
+PERMUTATIONS_ENGINE=gotator
+
+# Adaptive wordlist selection
+PERMUTATIONS_WORDLIST_MODE=auto      # auto|full|short
+PERMUTATIONS_SHORT_THRESHOLD=100     # auto: short if subdomains > threshold, else full (DEEP always full)
 
 # Gotator flags
 GOTATOR_FLAGS=" -depth 1 -numbers 3 -mindup -adv -md"
@@ -366,15 +381,26 @@ UNCOMMON_PORTS_WEB=$(cat "${SCRIPTPATH}/config/uncommon_ports_web.txt" 2>/dev/nu
 ### Host Module
 
 ```bash
-FAVICON=true                 # Favicon-based IP discovery
 PORTSCANNER=true             # Port scanning module
 GEO_INFO=true                # IP geolocation
 PORTSCAN_PASSIVE=true        # Shodan passive port scan
 PORTSCAN_ACTIVE=true         # Nmap active port scan
 CDN_IP=true                  # CDN detection
+CDN_BYPASS=true              # Optional origin IP discovery with hakoriginfinder (best-effort)
 
 # Nmap options
-PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2 --script vulners"
+PORTSCAN_ACTIVE_OPTIONS="--top-ports 200 -sV -n -Pn --open --max-retries 2"
+PORTSCAN_DEEP_OPTIONS="--top-ports 1000 -sV -n -Pn --open --max-retries 2 --script vulners"
+
+# Strategy: legacy nmap-only OR naabu discovery + targeted nmap
+PORTSCAN_STRATEGY=legacy     # legacy|naabu_nmap
+NAABU_ENABLE=true
+NAABU_RATE=1000
+NAABU_PORTS="--top-ports 1000"
+
+# Optional UDP scan (requires privileges on most systems)
+PORTSCAN_UDP=false
+PORTSCAN_UDP_OPTIONS="--top-ports 20 -sU -sV -n -Pn --open"
 ```
 
 ### Web Analysis Module
@@ -389,17 +415,29 @@ URL_GF=true                  # URL pattern matching
 URL_EXT=true                 # File extension sorting
 JSCHECKS=true                # JavaScript analysis
 FUZZ=true                    # Directory fuzzing
+FUZZ_RECURSION_DEPTH=2       # ffuf recursion depth used in DEEP mode
 IIS_SHORTNAME=true           # IIS shortname scanning
 CMS_SCANNER=true             # CMS detection
 WORDLIST=true                # Custom wordlist generation
 ROBOTSWORDLIST=true          # Robots.txt historical analysis
 PASSWORD_DICT=true           # Password dictionary generation
+PASSWORD_DICT_ENGINE=cewl    # cewl|pydictor
+PASSWORD_DICT_MAX_TARGETS=50
+PASSWORD_DICT_CEWL_DEPTH=1
+PASSWORD_DICT_CEWL_TIMEOUT=45
 PASSWORD_MIN_LENGTH=5        # Min password length
 PASSWORD_MAX_LENGTH=14       # Max password length
 GRAPHQL_CHECK=true           # GraphQL endpoint detection
 GQLSPECTION=false            # Deep GraphQL introspection
 PARAM_DISCOVERY=true         # Parameter discovery with Arjun
 GRPC_SCAN=false              # gRPC reflection probing
+KATANA_HEADLESS_PROFILE=off  # off|smart|full
+KATANA_HEADLESS_SMART_LIMIT=15
+
+# Nuclei DAST pass (runs as part of vuln scanning, e.g. `-a`)
+NUCLEI_DAST=true
+NUCLEI_DAST_TEMPLATE_PATH="${NUCLEI_TEMPLATES_PATH}/dast"
+NUCLEI_DAST_EXTRA_ARGS=""
 ```
 
 ### Vulnerability Module
@@ -407,9 +445,7 @@ GRPC_SCAN=false              # gRPC reflection probing
 ```bash
 VULNS_GENERAL=false          # Master toggle for vuln scanning
 XSS=true                     # XSS testing
-CORS=true                    # CORS misconfiguration
 TEST_SSL=true                # SSL/TLS analysis
-OPEN_REDIRECT=true           # Open redirect detection
 SSRF_CHECKS=true             # SSRF testing
 CRLF_CHECKS=true             # CRLF injection
 LFI=true                     # Local file inclusion
@@ -428,7 +464,6 @@ SECOND_ORDER_THREADS=10
 SECOND_ORDER_INSECURE=false
 SPRAY=true                   # Password spraying
 COMM_INJ=true                # Command injection
-PROTO_POLLUTION=true         # Prototype pollution
 SMUGGLING=true               # HTTP request smuggling
 WEBCACHE=true                # Web cache issues
 WEBCACHE_TOXICACHE=true      # Add toxicache engine
@@ -457,6 +492,11 @@ NUCLEI_FLAGS="-silent -retries 2"
 
 # JS secret scanning flags
 NUCLEI_FLAGS_JS="-silent -tags exposure,token -severity info,low,medium,high,critical"
+
+# Dedicated DAST pass (runs as part of vuln scanning, e.g. `-a`)
+NUCLEI_DAST=true
+NUCLEI_DAST_TEMPLATE_PATH="${NUCLEI_TEMPLATES_PATH}/dast"
+NUCLEI_DAST_EXTRA_ARGS=""
 ```
 
 ---
@@ -488,6 +528,21 @@ ARJUN_THREADS=10                     # Parameter discovery
 HTTPX_RATELIMIT=150                  # HTTP requests/second
 NUCLEI_RATELIMIT=150                 # Nuclei requests/second
 FFUF_RATELIMIT=0                     # Fuzzing requests/second (0=unlimited)
+```
+
+### DNS Resolver Selection
+
+reconFTW supports two DNS resolution backends and selects one resolver mode for the entire run:
+
+- `puredns`: fastest and includes strong wildcard filtering (massdns backend). Best on VPS/public networks.
+- `dnsx`: NAT-friendly (uses OS networking stack) and safer on home routers/CGNAT. Wildcard filtering is more basic.
+
+`DNS_RESOLVER=auto` selects `puredns` when the local outbound IPv4 is public. If the IP is non-public (RFC1918/CGNAT/link-local) or cannot be detected, it selects `dnsx` as the safe default.
+
+```bash
+DNS_RESOLVER=auto                    # auto|puredns|dnsx
+DNSX_THREADS=25                      # Used when DNS_RESOLVER=dnsx (or auto selects dnsx)
+DNSX_RATE_LIMIT=100                  # QPS for dnsx
 ```
 
 ### PureDNS Limits
@@ -527,20 +582,17 @@ PERMUTATIONS_LIMIT=21474836480       # Max permutation file size (bytes, 20GB)
 ## Wordlists
 
 ```bash
-# Fuzzing wordlist
-fuzz_wordlist=${tools}/fuzz_wordlist.txt
+# Built-in wordlists (shipped in-repo under data/wordlists/)
+fuzz_wordlist=${WORDLISTS_DIR}/fuzz_wordlist.txt
+lfi_wordlist=${WORDLISTS_DIR}/lfi_wordlist.txt
+ssti_wordlist=${WORDLISTS_DIR}/ssti_wordlist.txt
+subs_wordlist=${WORDLISTS_DIR}/subdomains.txt
+headers_inject=${WORDLISTS_DIR}/headers_inject.txt
 
-# LFI payloads
-lfi_wordlist=${tools}/lfi_wordlist.txt
-
-# SSTI payloads
-ssti_wordlist=${tools}/ssti_wordlist.txt
-
-# Subdomain wordlists
-subs_wordlist=${tools}/subdomains.txt
+# Optional large subdomain list (downloaded by installer)
 subs_wordlist_big=${tools}/subdomains_n0kovo_big.txt
 
-# Resolver lists
+# Resolver lists (downloaded by installer)
 resolvers=${tools}/resolvers.txt
 resolvers_trusted=${tools}/resolvers_trusted.txt
 ```
@@ -638,6 +690,7 @@ INCREMENTAL_MODE=false               # Incremental scanning
 MONITOR_MODE=false                   # Continuous monitoring mode
 MONITOR_INTERVAL_MIN=60              # Minutes between monitor cycles
 MONITOR_MAX_CYCLES=0                 # 0 = infinite loop
+MONITOR_MIN_SEVERITY=high            # critical|high|medium|low|info (alert threshold)
 ALERT_SUPPRESSION=true               # Suppress repeated alerts by fingerprint
 ALERT_SEEN_FILE=".incremental/alerts_seen.hashes"
 ```
