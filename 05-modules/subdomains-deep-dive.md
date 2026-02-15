@@ -94,7 +94,7 @@ Resolves all collected subdomains to filter non-existent ones.
 
 **Resolver used:** `puredns` (massdns backend) or `dnsx`
 
-reconFTW selects one resolver mode per run (see `DNS_RESOLVER`) and uses it consistently across all resolution and bruteforce steps.
+reconFTW selects one resolver mode per run via auto-detection (public IP or cloud metadata check) and uses it consistently across all resolution and bruteforce steps. See [DNS Resolver Selection](../04-configuration/configuration.md#dns-resolver-selection) for details.
 
 **Process:**
 1. Combine all passive results into single file

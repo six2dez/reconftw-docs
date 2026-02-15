@@ -534,10 +534,25 @@ FFUF_RATELIMIT=0                     # Fuzzing requests/second (0=unlimited)
 
 reconFTW supports two DNS resolution backends and selects one resolver mode for the entire run:
 
-- `puredns`: fastest and includes strong wildcard filtering (massdns backend). Best on VPS/public networks.
-- `dnsx`: NAT-friendly (uses OS networking stack) and safer on home routers/CGNAT. Wildcard filtering is more basic.
+- `puredns`: fastest and includes strong wildcard filtering (massdns backend). Best on VPS/public networks. Uses raw UDP sockets (massdns) which can overwhelm home router NAT tables.
+- `dnsx`: NAT-friendly (uses the OS networking stack) and safer on home routers/CGNAT. Wildcard filtering is more basic but works reliably behind any NAT.
 
-`DNS_RESOLVER=auto` selects `puredns` when the local outbound IPv4 is public. If the IP is non-public (RFC1918/CGNAT/link-local) or cannot be detected, it selects `dnsx` as the safe default.
+**Auto-detection (`DNS_RESOLVER=auto`)**
+
+When set to `auto` (default), reconFTW determines whether `puredns` is safe to use via a two-step heuristic:
+
+1. **Public local IP** — if the primary network interface has a publicly routable IPv4 address (not RFC1918, CGNAT, or link-local), the machine is a bare-metal or dedicated server. `puredns` is selected.
+2. **Cloud metadata endpoint** — many cloud providers (AWS, GCP, Azure, DigitalOcean, Hetzner Cloud, Oracle Cloud) assign private IPs to instances while mapping a public IP via 1:1 NAT at the hypervisor level. These providers expose a metadata service at `http://169.254.169.254/`. If this endpoint responds, the machine is a cloud VPS where `puredns` works safely despite the private local IP.
+3. **Neither** — the machine is assumed to be behind a home/office router or an unknown network. `dnsx` is selected as the safe default.
+
+The detection result is displayed in the startup banner:
+
+```
+Network: behind_nat=no  | DNS: puredns    # VPS or dedicated server
+Network: behind_nat=yes | DNS: dnsx       # Home, office, or unknown network
+```
+
+To override the auto-detection, set `DNS_RESOLVER` explicitly:
 
 ```bash
 DNS_RESOLVER=auto                    # auto|puredns|dnsx
