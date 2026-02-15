@@ -348,7 +348,7 @@ To avoid issues (see [OPSEC & Legal](opsec-legal.md#staying-under-the-radar)):
 ### How do I report a bug?
 
 Open a GitHub issue with:
-1. reconFTW version: `git rev-parse --abbrev-ref HEAD` and `git describe --tags 2>/dev/null || git rev-parse --short HEAD`
+1. Git info (branch + commit): `git rev-parse --abbrev-ref HEAD` and `git rev-parse --short HEAD`
 2. Operating system
 3. Full error message
 4. Steps to reproduce

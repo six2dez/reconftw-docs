@@ -41,7 +41,7 @@ Before scanning for vulnerabilities, you need to understand what you're scanning
 | `cms_scanner` | CMS detection | CMSeeK |
 | `wordlist_gen` | Custom wordlist generation | custom |
 | `wordlist_gen_roboxtractor` | Robots.txt wordlist | roboxtractor |
-| `password_dict` | Password dictionary generation | cewl (default), pydictor (legacy/optional) |
+| `password_dict` | Password dictionary generation | cewler (default), pydictor (legacy/optional) |
 | `iishortname` | IIS shortname scanning | shortscan |
 | `graphql_scan` | GraphQL endpoint detection | nuclei, GQLSpection |
 | `grpc_reflection` | gRPC reflection probing | grpcurl |
@@ -97,10 +97,10 @@ CMSSCAN_TIMEOUT=3600
 WORDLIST=true
 ROBOTSWORDLIST=true            # Robots.txt wordlist generation
 PASSWORD_DICT=true             # Password dictionary generation
-PASSWORD_DICT_ENGINE=cewl      # cewl|pydictor
-PASSWORD_DICT_MAX_TARGETS=50   # When not DEEP, cap number of targets cewl crawls
-PASSWORD_DICT_CEWL_DEPTH=1
-PASSWORD_DICT_CEWL_TIMEOUT=45
+PASSWORD_DICT_ENGINE=cewler    # cewler|pydictor
+PASSWORD_DICT_MAX_TARGETS=50   # When not DEEP, cap number of targets cewler crawls
+PASSWORD_DICT_CEWLER_DEPTH=1
+PASSWORD_DICT_CEWLER_TIMEOUT=45
 PASSWORD_MIN_LENGTH=5          # Min password length
 PASSWORD_MAX_LENGTH=14         # Max password length
 IIS_SHORTNAME=true
@@ -730,14 +730,14 @@ Generates target-specific password lists from live web content.
 **How It Works:**
 
 ```
-webs/webs_all.txt → cewl (crawl) → word candidates →
+webs/webs_all.txt → cewler (crawl) → word candidates →
 → Apply length constraints → webs/password_dict.txt
 ```
 
-By default the engine is `cewl`, which extracts words from HTML pages. When `DEEP=false`, the number of targets crawled is capped (`PASSWORD_DICT_MAX_TARGETS`) to keep runtime predictable.
+By default the engine is `cewler`, which extracts words from HTML pages. When `DEEP=false`, the number of targets crawled is capped (`PASSWORD_DICT_MAX_TARGETS`) to keep runtime predictable.
 
 **Requirements:**
-- `cewl` must be installed (Ruby gem).
+- `cewler` must be installed (Python, installed via venv).
 
 **Output:**
 ```
@@ -756,10 +756,10 @@ internal
 **Configuration:**
 ```bash
 PASSWORD_DICT=true
-PASSWORD_DICT_ENGINE=cewl
+PASSWORD_DICT_ENGINE=cewler
 PASSWORD_DICT_MAX_TARGETS=50
-PASSWORD_DICT_CEWL_DEPTH=1
-PASSWORD_DICT_CEWL_TIMEOUT=45
+PASSWORD_DICT_CEWLER_DEPTH=1
+PASSWORD_DICT_CEWLER_TIMEOUT=45
 PASSWORD_MIN_LENGTH=5      # Minimum password length
 PASSWORD_MAX_LENGTH=14     # Maximum password length
 ```

@@ -84,7 +84,7 @@ This page documents the tools currently integrated in reconFTW.
 | `mantra` | JS secret hunting |
 | `ffuf` | Directory and endpoint fuzzing |
 | `CMSeeK` | CMS fingerprinting |
-| `cewl` | Password dictionary generation from live content (Ruby gem) |
+| `cewler` | Password dictionary generation from live content (Python) |
 | `pydictor` | Password dictionary generation (legacy/optional fallback) |
 | `shortscan` | IIS shortname detection |
 | `gqlspection` | GraphQL analysis |

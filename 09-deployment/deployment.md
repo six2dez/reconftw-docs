@@ -84,14 +84,14 @@ cd reconftw
 
 ```bash
 # Pull latest image
-docker pull six2dez/reconftw:latest
+docker pull six2dez/reconftw:main
 
 # Run scan
 docker run -it --rm \
   -v $(pwd)/Recon:/reconftw/Recon \
   -v $(pwd)/reconftw.cfg:/reconftw/reconftw.cfg \
   -v $(pwd)/secrets.cfg:/reconftw/secrets.cfg \
-  six2dez/reconftw:latest \
+  six2dez/reconftw:main \
   -d example.com -r
 ```
 
@@ -104,7 +104,7 @@ version: '3.8'
 
 services:
   reconftw:
-    image: six2dez/reconftw:latest
+    image: six2dez/reconftw:main
     container_name: reconftw
     volumes:
       - ./Recon:/reconftw/Recon
@@ -127,7 +127,7 @@ docker-compose up
 
 ```dockerfile
 # Dockerfile.custom
-FROM six2dez/reconftw:latest
+FROM six2dez/reconftw:main
 
 # Add custom tools
 RUN go install -v github.com/custom/tool@latest
@@ -160,7 +160,7 @@ docker run -it --rm -v $(pwd)/Recon:/reconftw/Recon reconftw-custom -d example.c
 # docker-compose.yml with limits
 services:
   reconftw:
-    image: six2dez/reconftw:latest
+    image: six2dez/reconftw:main
     deploy:
       resources:
         limits:
@@ -251,205 +251,57 @@ screen -S recon
 
 ## Terraform Deployment
 
-### AWS Terraform
+> Note (best-effort): This is a reference setup. AMIs, SSH usernames, and cloud defaults change over time, so you may
+> need to adjust it for your environment.
 
-```hcl
-# main.tf
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.0"
-    }
-  }
-}
+The repository includes a reference implementation under `Terraform/` that provisions an EC2 instance and runs an
+Ansible playbook to install reconFTW and copy a baseline config.
 
-provider "aws" {
-  region = "us-east-1"
-}
+### AWS (Terraform + Ansible)
 
-resource "aws_instance" "reconftw" {
-  ami           = "ami-0c55b159cbfafe1f0"  # Ubuntu 22.04
-  instance_type = "t3.medium"
-  key_name      = "your-key-pair"
-  
-  vpc_security_group_ids = [aws_security_group.reconftw.id]
+**Requirements:** AWS credentials configured (e.g., `AWS_PROFILE`), `terraform`, and `ansible`.
 
-  user_data = <<-EOF
-              #!/bin/bash
-              apt update
-              apt install -y git
-              git clone https://github.com/six2dez/reconftw.git /opt/reconftw
-              cd /opt/reconftw && ./install.sh
-              EOF
-
-  tags = {
-    Name = "reconftw"
-  }
-  
-  root_block_device {
-    volume_size = 50
-  }
-}
-
-resource "aws_security_group" "reconftw" {
-  name        = "reconftw-sg"
-  description = "Security group for reconFTW"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["YOUR_IP/32"]  # Restrict to your IP
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-output "instance_ip" {
-  value = aws_instance.reconftw.public_ip
-}
-```
-
-Deploy:
 ```bash
+cd Terraform
+
+# Create a key pair used by Terraform/Ansible
+ssh-keygen -f terraform-keys -t ecdsa -b 521
+
 terraform init
-terraform plan
-terraform apply
+
+# Restrict SSH to your public IP
+terraform apply -var 'allowed_ssh_cidr=YOUR_PUBLIC_IP/32'
 ```
 
-### DigitalOcean Terraform
+**Optional:** deploy a specific branch/tag:
 
-```hcl
-# main.tf
-terraform {
-  required_providers {
-    digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
-    }
-  }
-}
-
-variable "do_token" {}
-
-provider "digitalocean" {
-  token = var.do_token
-}
-
-resource "digitalocean_droplet" "reconftw" {
-  image    = "ubuntu-22-04-x64"
-  name     = "reconftw"
-  region   = "nyc1"
-  size     = "s-2vcpu-4gb"
-  ssh_keys = [digitalocean_ssh_key.default.fingerprint]
-
-  user_data = <<-EOF
-              #!/bin/bash
-              apt update
-              apt install -y git
-              git clone https://github.com/six2dez/reconftw.git /opt/reconftw
-              cd /opt/reconftw && ./install.sh
-              EOF
-}
-
-resource "digitalocean_ssh_key" "default" {
-  name       = "reconftw-key"
-  public_key = file("~/.ssh/id_rsa.pub")
-}
-
-output "ip_address" {
-  value = digitalocean_droplet.reconftw.ipv4_address
-}
+```bash
+terraform apply -var 'allowed_ssh_cidr=YOUR_PUBLIC_IP/32' -var 'reconftw_branch=dev'
 ```
+
+**What gets deployed:**
+- An EC2 instance + security group (SSH restricted by `allowed_ssh_cidr`)
+- Ansible provisioning using `Terraform/reconFTW.yml`
+- A baseline config copied from `Terraform/files/reconftw.cfg` to `/opt/reconftw/reconftw.cfg`
+
+**Outputs:**
+- `public_ip`
+- `ssh_command`
 
 ---
 
 ## Ansible Deployment
 
-### Playbook
+If you already have a VM, you can run the included playbook directly (see `Terraform/reconFTW.yml`).
 
-```yaml
-# reconftw-playbook.yml
----
-- name: Deploy reconFTW
-  hosts: reconftw_servers
-  become: yes
-  
-  vars:
-    reconftw_user: recon
-    reconftw_path: /opt/reconftw
-    
-  tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-        
-    - name: Install dependencies
-      apt:
-        name:
-          - git
-          - curl
-          - wget
-          - python3
-          - python3-pip
-          - golang
-          - ruby
-          - jq
-        state: present
-        
-    - name: Create reconftw user
-      user:
-        name: "{{ reconftw_user }}"
-        shell: /bin/bash
-        groups: sudo
-        append: yes
-        
-    - name: Clone reconFTW
-      git:
-        repo: https://github.com/six2dez/reconftw.git
-        dest: "{{ reconftw_path }}"
-        version: main
-      become_user: "{{ reconftw_user }}"
-      
-    - name: Run installer
-      shell: ./install.sh
-      args:
-        chdir: "{{ reconftw_path }}"
-      become_user: "{{ reconftw_user }}"
-      
-    - name: Copy configuration
-      copy:
-        src: ./reconftw.cfg
-        dest: "{{ reconftw_path }}/reconftw.cfg"
-        owner: "{{ reconftw_user }}"
-        mode: '0644'
-        
-    - name: Copy secrets
-      copy:
-        src: ./secrets.cfg
-        dest: "{{ reconftw_path }}/secrets.cfg"
-        owner: "{{ reconftw_user }}"
-        mode: '0600'
-```
-
-### Inventory
-
-```ini
-# inventory.ini
-[reconftw_servers]
-reconftw-1 ansible_host=192.168.1.100 ansible_user=root
-reconftw-2 ansible_host=192.168.1.101 ansible_user=root
-```
-
-Run:
 ```bash
-ansible-playbook -i inventory.ini reconftw-playbook.yml
+cd Terraform
+
+# Single host inventory (note the trailing comma)
+ansible-playbook -i 'YOUR_INSTANCE_IP,' -u admin --private-key terraform-keys reconFTW.yml
+
+# Optional: deploy a specific branch/tag
+ansible-playbook -i 'YOUR_INSTANCE_IP,' -u admin --private-key terraform-keys -e reconftw_branch=dev reconFTW.yml
 ```
 
 ---
@@ -515,27 +367,27 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       
       - name: Setup reconFTW
         run: |
-          git clone https://github.com/six2dez/reconftw.git
-          cd reconftw && ./install.sh
+          chmod +x reconftw.sh install.sh
+          ./install.sh
           
       - name: Configure secrets
         run: |
-          echo "SHODAN_API_KEY=${{ secrets.SHODAN_API_KEY }}" >> reconftw/secrets.cfg
+          echo "SHODAN_API_KEY=${{ secrets.SHODAN_API_KEY }}" >> secrets.cfg
+          chmod 600 secrets.cfg
           
       - name: Run scan
         run: |
-          cd reconftw
           ./reconftw.sh -d ${{ github.event.inputs.target }} -r
           
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:
           name: reconftw-results
-          path: reconftw/Recon/
+          path: Recon/
 ```
 
 #### Advanced: Multi-Target with Diff and Notifications
@@ -659,7 +511,7 @@ stages:
 
 reconftw_scan:
   stage: scan
-  image: six2dez/reconftw:latest
+  image: six2dez/reconftw:main
   script:
     - ./reconftw.sh -d $TARGET_DOMAIN -r
   artifacts:
@@ -682,7 +534,7 @@ variables:
   TARGETS: "target1.com target2.com target3.com"
 
 .scan_template: &scan_template
-  image: six2dez/reconftw:latest
+  image: six2dez/reconftw:main
   before_script:
     - echo "$SECRETS_CFG" > secrets.cfg
   artifacts:

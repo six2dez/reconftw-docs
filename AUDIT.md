@@ -51,9 +51,8 @@
 | `s3buckets` | ✅ | subdomains.md | Complete |
 | `geo_info` | ✅ | hosts.md | Documented in hosts module |
 | `subdomains_full` | ❌ | - | Internal orchestration, skip |
-| `cloud_extra_providers` | ✅ | hosts.md | **Documented (Phase 3)** |
 
-**Coverage: 19/20 (95%)**
+**Coverage: 18/19 (95%)**
 
 ---
 
@@ -281,5 +280,5 @@
 
 ### Maintenance (Phase 5+):
 1. Auto-generation script for flags/config
-2. Version metadata system
+2. Git metadata system
 3. Cross-link validation

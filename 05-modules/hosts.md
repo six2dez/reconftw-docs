@@ -11,7 +11,6 @@ The host analysis module examines the infrastructure behind discovered assets, i
 | `portscan` | Port discovery (passive + active) | naabu (optional), nmap, smap |
 | `cdnprovider` | CDN detection and filtering | cdncheck, hakoriginfinder (optional) |
 | `waf_checks` | WAF detection | wafw00f |
-| `cloud_extra_providers` | Extra cloud storage enumeration | curl |
 | `geo_info` | IP geolocation | ipinfo |
 | `banner_grabber` | Service banner extraction | nmap |
 
@@ -376,61 +375,6 @@ GEO_INFO=true
 
 ---
 
-## Cloud Storage Enumeration
-
-### `cloud_extra_providers` - Extra Cloud Provider Checks
-
-Discovers misconfigured cloud storage buckets beyond standard S3 enumeration.
-
-**Cloud Providers Checked:**
-- **Google Cloud Storage (GCS)**
-  - `https://storage.googleapis.com/{name}/`
-  - `https://{name}.storage.googleapis.com/`
-- **Azure Blob Storage**
-  - `https://{name}.blob.core.windows.net/{container}`
-  - Tests common containers: public, static, media, images, assets, backup, files, cdn
-
-**How It Works:**
-
-```
-Domain → Extract company/brand names → 
-→ Generate candidate bucket names → Test cloud URLs →
-→ Check for public access (200/403) → Report findings
-```
-
-**Name Generation:**
-1. Domain root (e.g., "example" from "example.com")
-2. Company name variations
-3. Subdomain prefixes (e.g., "api", "dev", "staging")
-4. Combined with common container names
-
-**Output:**
-```
-subdomains/cloud_extra.txt
-```
-
-**Sample Output:**
-```
-GCS examplecorp https://storage.googleapis.com/examplecorp/ 
-GCS example-backup https://example-backup.storage.googleapis.com/
-AZURE examplecorp/public https://examplecorp.blob.core.windows.net/public
-AZURE example-dev/static https://example-dev.blob.core.windows.net/static
-```
-
-**What It Finds:**
-- Publicly accessible storage buckets
-- Buckets returning 403 (exist but restricted - worth manual testing)
-- Misconfigured backup/static file storage
-
-**Security Implications:**
-- Public buckets may contain sensitive data
-- 403 responses confirm bucket existence (enumeration value)
-- Backup buckets often contain valuable data
-
-**Note:** This complements the OSINT module's `cloud_enum` function by testing additional providers and name variations.
-
----
-
 ## IPv6 Scanning
 
 ### IPv6 Discovery and Scanning
@@ -518,7 +462,6 @@ IPV6_SCAN=true
 | `hosts/waf.txt` | WAF detection results |
 | `hosts/geo.txt` | Geolocation data |
 | `hosts/grpc_reflection.txt` | gRPC services with reflection |
-| `subdomains/cloud_extra.txt` | Extra cloud storage findings |
 
 ---
 

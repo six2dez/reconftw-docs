@@ -602,6 +602,19 @@ Only scan new findings since last run.
 4. Scans only new assets
 5. Generates incremental report
 
+### `--force`
+
+Force a full rescan by clearing checkpoint markers for the current target.
+
+```bash
+./reconftw.sh -d example.com -r --force
+```
+
+**Behavior:**
+- Removes function completion markers under `Recon/<target>/.called_fn/` for this run
+- Re-runs modules that would otherwise be skipped as `CACHE`
+- Useful after changing config, tools, or templates when you want everything to run again
+
 ### `--adaptive-rate`
 
 Automatically adjust rate limits when encountering errors.
@@ -667,6 +680,29 @@ Run independent functions in parallel for faster scans.
 - With Axiom (already distributed)
 - When debugging issues
 
+### `--parallel-log <summary|tail|full>`
+
+Control how output from parallel execution is displayed.
+
+```bash
+# Compact (default): one-line status per task, failures summarized
+./reconftw.sh -d example.com -r --parallel --parallel-log summary
+
+# Show last lines for context (useful for debugging)
+./reconftw.sh -d example.com -r --parallel --parallel-log tail
+
+# Full buffered output per task (noisy)
+./reconftw.sh -d example.com -r --parallel --parallel-log full
+```
+
+### `--show-cache`
+
+Show cached steps in the output (by default, cached steps may be collapsed to keep logs short).
+
+```bash
+./reconftw.sh -d example.com -r --parallel --show-cache
+```
+
 ### `--monitor`
 
 Enable continuous monitoring mode for repeated reconnaissance cycles on the same target.
@@ -728,6 +764,14 @@ Force refresh cached resources (resolvers and wordlist-related data) for the cur
 ./reconftw.sh -d example.com -r --refresh-cache
 ```
 
+### `--gen-resolvers`
+
+Generate a fresh resolver list via `dnsvalidator` (slower but can improve DNS accuracy).
+
+```bash
+./reconftw.sh -d example.com -r --gen-resolvers
+```
+
 ### `--export <json|html|csv|all>`
 
 Control report/export artifacts emitted at the end of the run (or with `--report-only`).
@@ -741,6 +785,14 @@ Control report/export artifacts emitted at the end of the run (or with `--report
 - `html`: consolidated HTML report (`report/index.html`)
 - `csv`: CSV artifacts (`report/*.csv`) plus normalized JSONL
 - `all`: HTML + JSONL + CSV
+
+### `--no-report`
+
+Disable report generation and exports at the end of the run.
+
+```bash
+./reconftw.sh -d example.com -r --no-report
+```
 
 ### `--check-tools`
 
@@ -773,6 +825,50 @@ Run system health diagnostics.
 - Required directories exist
 - Network connectivity
 - Disk space available
+
+### `--quiet`
+
+Minimal console output (errors and final summary only).
+
+```bash
+./reconftw.sh -d example.com -r --quiet
+```
+
+### `--no-color`
+
+Disable ANSI colors (useful for CI logs).
+
+```bash
+./reconftw.sh -d example.com -r --no-color
+```
+
+### `--log-format <plain|jsonl>`
+
+Control console log formatting.
+
+```bash
+# Default human-readable output
+./reconftw.sh -d example.com -r --log-format plain
+
+# JSON lines (machine-readable console events)
+./reconftw.sh -d example.com -r --log-format jsonl
+```
+
+### `--banner` / `--no-banner`
+
+Control the ASCII banner at startup.
+
+```bash
+./reconftw.sh -d example.com -r --no-banner
+```
+
+### `--legal`
+
+Print the legal/authorization block and continue.
+
+```bash
+./reconftw.sh -d example.com -r --legal
+```
 
 ---
 
@@ -886,10 +982,22 @@ Run system health diagnostics.
 | - | `--monitor-interval` | minutes | Minutes between monitor cycles |
 | - | `--monitor-cycles` | count | Stop monitor after N cycles (0 infinite) |
 | - | `--report-only` | - | Rebuild report artifacts only |
+| - | `--no-report` | - | Disable report generation and exports |
 | - | `--refresh-cache` | - | Force cache refresh for this run |
+| - | `--gen-resolvers` | - | Generate a fresh resolver list |
+| - | `--force` | - | Force a full rescan (clear checkpoints) |
 | - | `--export` | format | Export artifacts: json/html/csv/all |
 | - | `--check-tools` | - | Verify tool installation |
 | - | `--health-check` | - | System diagnostics |
+| - | `--parallel-log` | mode | Parallel output: summary/tail/full |
+| - | `--show-cache` | - | Show cached steps in output |
+| - | `--quiet` | - | Minimal console output |
+| - | `--verbose` | - | Extra console output |
+| - | `--no-color` | - | Disable ANSI colors |
+| - | `--log-format` | format | Console log format: plain/jsonl |
+| - | `--banner` | - | Enable ASCII banner |
+| - | `--no-banner` | - | Disable ASCII banner |
+| - | `--legal` | - | Show legal block |
 | `-h` | `--help` | - | Show help message |
 
 ---

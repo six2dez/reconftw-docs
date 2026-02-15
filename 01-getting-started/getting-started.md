@@ -52,11 +52,8 @@ This is the standard installation for Linux/macOS systems.
 git clone https://github.com/six2dez/reconftw.git
 cd reconftw
 
-# Run the installer (interactive)
+# Run the installer (non-interactive)
 ./install.sh
-
-# Or run non-interactively (option 1 = install all)
-echo 1 | ./install.sh
 ```
 
 	The installer will:
@@ -68,16 +65,16 @@ echo 1 | ./install.sh
 
 > **⏱️ Installation Time**: 15-45 minutes depending on internet speed and system resources.
 
-#### Installation Options
+#### Installer Flags
 
-When running `./install.sh`, you'll see these options:
+The installer is controlled via flags (it does not prompt for menu choices):
 
-```
-Select an option:
-1. Install all dependencies and tools
-2. Install only tools (skip dependencies)
-3. Update tools only
-4. Check tool installation status
+```bash
+./install.sh --tools             # Install/upgrade tools only
+./install.sh --verbose           # Show detailed output
+./install.sh --log install.log   # Tee output to a file
+./install.sh --force-update      # Force git update even with local changes
+./install.sh --dry-run           # Print actions without executing
 ```
 
 ### Method 2: Docker Installation
@@ -86,13 +83,13 @@ Docker provides a consistent environment across all platforms.
 
 ```bash
 # Pull the official image
-docker pull six2dez/reconftw:latest
+docker pull six2dez/reconftw:main
 
 # Run a scan
-docker run --rm -v $(pwd)/Recon:/reconftw/Recon six2dez/reconftw:latest -d example.com -r
+docker run --rm -v $(pwd)/Recon:/reconftw/Recon six2dez/reconftw:main -d example.com -r
 
 # Interactive mode
-docker run -it --rm -v $(pwd)/Recon:/reconftw/Recon six2dez/reconftw:latest /bin/bash
+docker run -it --rm -v $(pwd)/Recon:/reconftw/Recon six2dez/reconftw:main /bin/bash
 ```
 
 #### Docker with Custom Configuration
@@ -103,7 +100,7 @@ docker run --rm \
   -v $(pwd)/Recon:/reconftw/Recon \
   -v $(pwd)/my_config.cfg:/reconftw/reconftw.cfg \
   -e SHODAN_API_KEY="your_key" \
-  six2dez/reconftw:latest -d example.com -r
+  six2dez/reconftw:main -d example.com -r
 ```
 
 #### Building Custom Docker Image
@@ -120,16 +117,13 @@ For deploying reconFTW on AWS or other cloud providers:
 ```bash
 cd reconftw/Terraform
 
-# Configure your AWS credentials
-export AWS_ACCESS_KEY_ID="your_key"
-export AWS_SECRET_ACCESS_KEY="your_secret"
+# Create a key pair for the instance
+ssh-keygen -f terraform-keys -t ecdsa -b 521
 
 # Deploy infrastructure
 terraform init
-terraform apply
-
-# Run Ansible playbook
-ansible-playbook -i inventory reconFTW.yml
+# Restrict SSH to your public IP
+terraform apply -var 'allowed_ssh_cidr=YOUR_PUBLIC_IP/32'
 ```
 
 See [Deployment Guide](../09-deployment/deployment.md) for detailed cloud setup.
@@ -269,7 +263,6 @@ git pull
 
 ```bash
 ./install.sh --tools
-# Or use option 3 in interactive mode
 ```
 
 ### Automatic Updates Before Scans
@@ -329,12 +322,11 @@ Multiple tokens help avoid rate limiting during GitHub reconnaissance.
 ### "Go not found"
 
 ```bash
-# Install Go manually
-wget https://go.dev/dl/go1.21.linux-amd64.tar.gz
-sudo tar -C /usr/local -xzf go1.21.linux-amd64.tar.gz
-export PATH=$PATH:/usr/local/go/bin
-export GOPATH=$HOME/go
-export PATH=$PATH:$GOPATH/bin
+# Install Go from the official instructions:
+# https://go.dev/doc/install
+#
+# Ensure Go and GOPATH binaries are in PATH:
+export PATH="$PATH:/usr/local/go/bin:$HOME/go/bin"
 ```
 
 ### "Permission denied"
