@@ -33,7 +33,7 @@ docker pull faradaysec/faraday:latest
 docker run -d --name faraday -p 5985:5985 faradaysec/faraday
 
 # Or native installation
-pip install faradaysec
+uv tool install faradaysec
 ```
 
 ### Faraday Setup

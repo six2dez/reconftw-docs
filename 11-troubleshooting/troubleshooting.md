@@ -71,17 +71,16 @@ export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
 
 **Symptom:**
 ```
-ERROR: pip's dependency resolver does not support...
+ERROR: dependency resolver does not support...
 ```
 
 **Solution:**
 ```bash
-# Create virtual environment
-python3 -m venv ~/reconftw-venv
-source ~/reconftw-venv/bin/activate
+# Reinstall uv and let install.sh handle venvs
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install dependencies
-pip install -r requirements.txt
+# Re-run the installer
+./install.sh
 ```
 
 ---

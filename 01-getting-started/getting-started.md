@@ -33,7 +33,7 @@ reconFTW will install most dependencies automatically, but these base packages a
 ```bash
 # Ubuntu/Debian
 sudo apt update
-sudo apt install -y git curl wget python3 python3-pip ruby golang jq
+sudo apt install -y git curl wget python3 ruby golang jq
 
 # macOS (via Homebrew)
 brew install git curl wget python@3 ruby go jq gnu-getopt coreutils gnu-sed bash

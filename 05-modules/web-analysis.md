@@ -737,7 +737,7 @@ webs/webs_all.txt → cewler (crawl) → word candidates →
 By default the engine is `cewler`, which extracts words from HTML pages. When `DEEP=false`, the number of targets crawled is capped (`PASSWORD_DICT_MAX_TARGETS`) to keep runtime predictable.
 
 **Requirements:**
-- `cewler` must be installed (Python, installed via venv).
+- `cewler` must be installed (Python, installed via `uv tool install`).
 
 **Output:**
 ```

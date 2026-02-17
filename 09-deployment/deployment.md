@@ -46,7 +46,7 @@ cd reconftw
 ```bash
 # Install system dependencies
 sudo apt update
-sudo apt install -y git curl wget python3 python3-pip ruby golang jq
+sudo apt install -y git curl wget python3 ruby golang jq
 
 # Set up Go environment
 export GOPATH=$HOME/go
@@ -565,7 +565,7 @@ generate_report:
     - scan_target1
     - scan_target2
   script:
-    - pip install jinja2
+    - uv pip install jinja2
     - python scripts/generate_report.py
   artifacts:
     paths:
