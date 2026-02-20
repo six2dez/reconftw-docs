@@ -241,38 +241,14 @@ resolvers_trusted="/path/to/resolvers_trusted.txt"
 
 ### Incremental Data Flow
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      Incremental Scan Flow                           │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────────┐     ┌──────────────┐                              │
-│  │  New Scan    │     │ Previous     │                              │
-│  │  Results     │     │ Results      │                              │
-│  └──────┬───────┘     └──────┬───────┘                              │
-│         │                    │                                       │
-│         └────────┬───────────┘                                       │
-│                  │                                                   │
-│                  ▼                                                   │
-│         ┌───────────────┐                                           │
-│         │    Compare    │                                           │
-│         │  (comm/diff)  │                                           │
-│         └───────┬───────┘                                           │
-│                 │                                                    │
-│     ┌───────────┼───────────┐                                       │
-│     ▼           ▼           ▼                                       │
-│ ┌───────┐  ┌────────┐  ┌────────┐                                  │
-│ │  New  │  │ Common │  │Removed │                                  │
-│ │ Items │  │ Items  │  │ Items  │                                  │
-│ └───┬───┘  └────────┘  └────────┘                                  │
-│     │                                                                │
-│     ▼                                                               │
-│ ┌─────────────────┐                                                 │
-│ │ Process ONLY    │                                                 │
-│ │ New Items       │                                                 │
-│ └─────────────────┘                                                 │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    N[New Scan Results] --> C[Compare with comm/diff]
+    P[Previous Results] --> C
+    C --> NI[New Items]
+    C --> CI[Common Items]
+    C --> RI[Removed Items]
+    NI --> PO[Process Only New Items]
 ```
 
 ### Incremental Configuration

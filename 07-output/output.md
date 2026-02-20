@@ -1069,7 +1069,7 @@ cat nuclei_output/*_json.txt | jq -r '[.host, .["template-id"], .info.severity] 
 
 ### Export to Faraday
 
-Automatic when `FARADAY` is enabled. Results imported to workspace.
+Automatic when `FARADAY` is enabled. Results are imported to `FARADAY_WORKSPACE` using the current authenticated `faraday-cli` session.
 
 ### Export to JSON
 

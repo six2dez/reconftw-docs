@@ -25,6 +25,19 @@ The subdomain enumeration module is the cornerstone of reconFTW, discovering all
 | `zonetransfer` | Active | DNS zone transfer check | dig |
 | `s3buckets` | Active | S3 bucket enumeration | S3Scanner, CloudHunter |
 
+## Module Flow
+
+```mermaid
+flowchart TD
+    T[Target Domain] --> P[sub_passive and sub_crt]
+    P --> R[sub_active and sub_dns]
+    R --> A[sub_tls and sub_analytics]
+    A --> B[sub_brute and permutations]
+    B --> X[sub_recursive_passive and sub_recursive_brute and sub_scraping]
+    X --> V[subtakeover and zonetransfer and s3buckets]
+    V --> O[subdomains outputs]
+```
+
 ---
 
 ## Configuration Options

@@ -14,13 +14,6 @@ Faraday provides:
 - **Integration with 80+ security tools**
 - **Workspace management**
 
-<!-- IMAGE PLACEHOLDER
-**Image: faraday-integration.png**
-Description: Diagram showing data flow from reconFTW to Faraday
-- reconFTW scan → Results (nuclei, nmap) → Faraday API → Faraday Dashboard
-- Show workspace with vulnerabilities listed
--->
-
 ---
 
 ## Prerequisites
@@ -41,7 +34,7 @@ uv tool install faradaysec
 1. Access Faraday web interface: `http://localhost:5985`
 2. Create admin account
 3. Create workspace for your project
-4. Generate API token
+4. Authenticate your CLI session (`faraday-cli`) against your Faraday instance
 
 ---
 
@@ -55,21 +48,8 @@ uv tool install faradaysec
 # Enable Faraday
 FARADAY=true
 
-# Faraday server URL
-FARADAY_URL="http://localhost:5985"
-
 # Workspace name
 FARADAY_WORKSPACE="reconftw"
-
-# API credentials (in secrets.cfg)
-# FARADAY_API_TOKEN="your_token"
-```
-
-### secrets.cfg Setup
-
-```bash
-# In secrets.cfg
-FARADAY_API_TOKEN="your_api_token_here"
 ```
 
 ---
@@ -89,42 +69,22 @@ reconFTW automatically sends:
 
 ## Integration Flow
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    Faraday Integration Flow                          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────────┐                                                    │
-│  │   reconFTW   │                                                    │
-│  │    Scan      │                                                    │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│    ┌────┴────┬────────────┬─────────────┐                           │
-│    ▼         ▼            ▼             ▼                           │
-│ ┌──────┐ ┌───────┐  ┌──────────┐  ┌──────────┐                     │
-│ │Nuclei│ │ Nmap  │  │  Hosts   │  │ Services │                     │
-│ │ JSON │ │  XML  │  │   IPs    │  │  Ports   │                     │
-│ └──┬───┘ └───┬───┘  └────┬─────┘  └────┬─────┘                     │
-│    │         │           │             │                            │
-│    └────┬────┴───────────┴─────────────┘                           │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌──────────────┐                                                    │
-│  │ faraday-cli  │ (or API calls)                                    │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         │ POST /api/v3/ws/{workspace}/...                           │
-│         ▼                                                            │
-│  ┌──────────────────────────────────────────────────────┐           │
-│  │                 Faraday Server                        │           │
-│  ├──────────────────────────────────────────────────────┤           │
-│  │  ┌─────────┐  ┌─────────────┐  ┌────────────────┐   │           │
-│  │  │  Hosts  │  │  Services   │  │ Vulnerabilities│   │           │
-│  │  │  Table  │  │   Table     │  │     Table      │   │           │
-│  │  └─────────┘  └─────────────┘  └────────────────┘   │           │
-│  └──────────────────────────────────────────────────────┘           │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    R[reconFTW Scan] --> N[Nuclei JSON]
+    R --> M[Nmap XML]
+    R --> H[Hosts IPs]
+    R --> S[Services Ports]
+
+    N --> C[faraday-cli]
+    M --> C
+    H --> C
+    S --> C
+
+    C --> F[Faraday Server]
+    F --> FH[Hosts Table]
+    F --> FS[Services Table]
+    F --> FV[Vulnerabilities Table]
 ```
 
 ---
@@ -136,12 +96,6 @@ reconFTW automatically sends:
 ```bash
 # Via Faraday CLI
 faraday-cli create_ws reconftw
-
-# Via API
-curl -X POST "http://localhost:5985/api/v3/ws" \
-  -H "Authorization: Token $FARADAY_API_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "reconftw"}'
 ```
 
 ### Workspace Strategy
@@ -238,17 +192,15 @@ FARADAY_BATCH_SIZE=100
 ### Connection Issues
 
 ```bash
-# Test Faraday connectivity
-curl -X GET "http://localhost:5985/api/v3/info" \
-  -H "Authorization: Token $FARADAY_API_TOKEN"
+# Test Faraday CLI session/context
+faraday-cli status
 ```
 
 ### Authentication Errors
 
 ```bash
-# Verify token
-# Check secrets.cfg has correct token
-# Regenerate token in Faraday web UI if needed
+# Re-authenticate faraday-cli for your target server/context
+faraday-cli status
 ```
 
 ### Missing Data
@@ -269,7 +221,7 @@ Faraday deduplicates by:
 ## Best Practices
 
 1. **Workspace naming:** Use consistent naming convention
-2. **Token security:** Keep API token in secrets.cfg
+2. **CLI auth context:** Ensure `faraday-cli` is authenticated before running reconFTW
 3. **Regular cleanup:** Archive old workspaces
 4. **Backup:** Export workspaces regularly
 5. **Access control:** Use Faraday roles for team access

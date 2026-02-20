@@ -6,42 +6,19 @@ reconFTW is organized into specialized modules, each handling a specific phase o
 
 ## Module Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      reconFTW Module System                          │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────────┐                                                    │
-│  │    Target    │                                                    │
-│  │   Input      │                                                    │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌──────────────┐     Intelligence gathering                        │
-│  │    OSINT     │────▶ Dorks, emails, metadata, leaks               │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌──────────────┐     Asset discovery                               │
-│  │  Subdomains  │────▶ Passive, brute, permutations, takeover       │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌──────────────┐     Infrastructure analysis                       │
-│  │    Hosts     │────▶ Ports, CDN, WAF, geolocation                 │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌──────────────┐     Web application analysis                      │
-│  │ Web Analysis │────▶ Probing, screenshots, JS, fuzzing            │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         ▼                                                            │
-│  ┌──────────────┐     Security testing                              │
-│  │Vulnerabilities│───▶ Nuclei, XSS, SQLi, SSRF, etc.                │
-│  └──────────────┘                                                    │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    T[Target Input] --> O[OSINT]
+    O --> S[Subdomains]
+    S --> H[Hosts]
+    H --> W[Web Analysis]
+    W --> V[Vulnerabilities]
+
+    O -.-> O1[Dorks, emails, metadata, leaks]
+    S -.-> S1[Passive, brute, permutations, takeover]
+    H -.-> H1[Ports, CDN, WAF, geolocation]
+    W -.-> W1[Probing, screenshots, JS analysis, fuzzing]
+    V -.-> V1[Nuclei, XSS, SQLi, SSRF, etc.]
 ```
 
 ---

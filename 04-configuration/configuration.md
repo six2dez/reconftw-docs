@@ -679,9 +679,6 @@ AXIOM_EXTRA_ARGS=""
 
 ```bash
 FARADAY=false                        # Enable Faraday integration
-FARADAY_SERVER="http://localhost:5985"
-FARADAY_USER="faraday"
-FARADAY_PASS="FARADAY_PASSWORD"
 FARADAY_WORKSPACE="reconftw"
 ```
 

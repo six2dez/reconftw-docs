@@ -16,6 +16,19 @@ The host analysis module examines the infrastructure behind discovered assets, i
 
 > `favirecon_tech` (favicon technology fingerprinting) is executed in the Web Analysis module and writes to `webs/favirecon.[json|txt]`.
 
+## Module Flow
+
+```mermaid
+flowchart TD
+    I[IPs from subdomains and web probes] --> P[portscan passive and active]
+    P --> F[service_fingerprint]
+    F --> C[cdnprovider]
+    C --> W[waf_checks]
+    C --> G[geo_info]
+    W --> O[hosts outputs]
+    G --> O
+```
+
 ---
 
 ## Configuration Options

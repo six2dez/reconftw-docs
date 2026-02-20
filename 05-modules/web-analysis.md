@@ -49,6 +49,27 @@ Before scanning for vulnerabilities, you need to understand what you're scanning
 | `websocket_checks` | WebSocket auditing | custom |
 | `llm_probe` | LLM service probing | julius |
 
+## Module Flow
+
+```mermaid
+flowchart TD
+    S[Subdomains] --> P[webprobe_simple and webprobe_full]
+    P --> T[favirecon_tech and screenshot and virtualhosts]
+    P --> U[urlchecks and url_gf and url_ext]
+    U --> J[jschecks]
+    U --> F[fuzz]
+    U --> D[param_discovery]
+    U --> G[graphql_scan and grpc_reflection]
+    U --> W[wordlist generation and password_dict]
+    P --> C[cms_scanner]
+    J --> O[web module outputs]
+    F --> O
+    D --> O
+    G --> O
+    W --> O
+    C --> O
+```
+
 ---
 
 ## Configuration Options

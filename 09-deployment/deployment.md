@@ -488,9 +488,6 @@ jobs:
           cd reconftw
           cat << EOF >> reconftw.cfg
           FARADAY=true
-          FARADAY_URL="${{ secrets.FARADAY_URL }}"
-          FARADAY_USER="${{ secrets.FARADAY_USER }}"
-          FARADAY_PASSWORD="${{ secrets.FARADAY_PASSWORD }}"
           FARADAY_WORKSPACE="${{ github.event.inputs.workspace || 'default' }}"
           EOF
           

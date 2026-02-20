@@ -30,29 +30,18 @@ reconFTW follows these design principles:
 
 reconFTW implements a structured reconnaissance methodology following industry best practices:
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    reconFTW Reconnaissance Phases                    │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐      │
-│  │  OSINT   │───▶│ Subdomain│───▶│   Web    │───▶│  Vulns   │      │
-│  │ Gathering│    │   Enum   │    │ Analysis │    │ Scanning │      │
-│  └──────────┘    └──────────┘    └──────────┘    └──────────┘      │
-│       │               │               │               │             │
-│       ▼               ▼               ▼               ▼             │
-│  • Dorks          • Passive       • Probing       • Nuclei         │
-│  • Emails         • Active        • Screenshots   • XSS/SQLi       │
-│  • Metadata       • Bruteforce    • Fuzzing       • SSRF/LFI       │
-│  • API leaks      • Permutations  • JS Analysis   • Misconfigs     │
-│  • GitHub         • Takeovers     • CMS detect    • SSL/TLS        │
-│                                                                      │
-│                     Reporting / Automation Layer                     │
-│             • perf_summary.json • report/report.json                │
-│             • report/index.html • report/* exports                  │
-│             • monitor deltas and alerts snapshots                   │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    O[OSINT Gathering] --> S[Subdomain Enumeration]
+    S --> W[Web Analysis]
+    W --> V[Vulnerability Scanning]
+    V --> R[Reporting and Automation]
+
+    O1[Dorks, Emails, Metadata, API leaks, GitHub] -.-> O
+    S1[Passive, Active, Bruteforce, Permutations, Takeovers] -.-> S
+    W1[Probing, Screenshots, Fuzzing, JS analysis, CMS detection] -.-> W
+    V1[Nuclei, XSS/SQLi, SSRF/LFI, Misconfigs, SSL/TLS] -.-> V
+    R1[perf_summary.json, report/report.json, report/index.html, monitor snapshots] -.-> R
 ```
 
 ### Phase 1: OSINT (Open Source Intelligence)
@@ -224,60 +213,27 @@ function some_scan() {
 
 Understanding how data flows through reconFTW helps interpret results:
 
-```
-                           ┌─────────────────────────────────────┐
-                           │           USER INPUT                │
-                           │  -d domain.com / -l targets.txt     │
-                           └─────────────────┬───────────────────┘
-                                             │
-                                             ▼
-                           ┌─────────────────────────────────────┐
-                           │         INPUT SANITIZATION          │
-                           │  • Validate domain/IP format        │
-                           │  • Remove dangerous characters      │
-                           │  • Normalize case                   │
-                           └─────────────────┬───────────────────┘
-                                             │
-                                             ▼
-                           ┌─────────────────────────────────────┐
-                           │        DIRECTORY SETUP              │
-                           │  Recon/<domain>/                    │
-                           │  ├── subdomains/                    │
-                           │  ├── webs/                          │
-                           │  ├── hosts/                         │
-                           │  ├── vulns/                         │
-                           │  ├── osint/                         │
-                           │  ├── .tmp/                          │
-                           │  └── .log/                          │
-                           └─────────────────┬───────────────────┘
-                                             │
-                    ┌────────────────────────┼────────────────────────┐
-                    │                        │                        │
-                    ▼                        ▼                        ▼
-         ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-         │      OSINT       │    │    SUBDOMAINS    │    │       WEB        │
-         │   (osint.sh)     │    │ (subdomains.sh)  │    │    (web.sh)      │
-         └────────┬─────────┘    └────────┬─────────┘    └────────┬─────────┘
-                  │                       │                       │
-                  ▼                       ▼                       ▼
-         ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-         │  osint/*.txt     │───▶│subdomains/*.txt  │───▶│   webs/*.txt     │
-         └──────────────────┘    └────────┬─────────┘    └────────┬─────────┘
-                                          │                       │
-                                          │                       │
-                                          ▼                       ▼
-                                 ┌──────────────────┐    ┌──────────────────┐
-                                 │  HOSTS ANALYSIS  │    │ VULN SCANNING    │
-                                 │   (hosts/)       │    │   (vulns.sh)     │
-                                 └──────────────────┘    └────────┬─────────┘
-                                                                  │
-                                                                  ▼
-                                                         ┌──────────────────┐
-                                                         │  FINAL OUTPUT    │
-                                                         │  • vulns/        │
-                                                         │  • nuclei_output/│
-                                                         │  • hotlist.txt   │
-                                                         └──────────────────┘
+```mermaid
+flowchart TD
+    U[User Input: -d domain.com or -l targets.txt] --> I[Input Sanitization]
+    I --> D[Directory Setup: Recon/domain]
+    D --> O[OSINT: osint.sh]
+    D --> S[Subdomains: subdomains.sh]
+    D --> W[Web: web.sh]
+
+    O --> OF[osint/*.txt]
+    S --> SF[subdomains/*.txt]
+    W --> WF[webs/*.txt]
+
+    SF --> H[Hosts Analysis: hosts/]
+    WF --> V[Vulnerability Scanning: vulns.sh]
+    SF --> V
+
+    H --> F[Final Output]
+    V --> F
+    F --> F1[vulns/]
+    F --> F2[nuclei_output/]
+    F --> F3[hotlist.txt]
 ```
 
 ### Data Dependencies

@@ -286,48 +286,20 @@ Risk-scored priority findings.
 
 ## Data Flow
 
-```
-┌─────────────┐
-│   INPUT     │
-│  -d / -l    │
-└──────┬──────┘
-       │
-       ▼
-┌─────────────────────────────────────────────────┐
-│              OSINT MODULE                        │
-│  Domain → emails, dorks, GitHub leaks           │
-└──────┬──────────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────────────────┐
-│           SUBDOMAIN MODULE                       │
-│  Domain → subdomains.txt (merged, deduped)      │
-└──────┬──────────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────────────────┐
-│            WEB MODULE                            │
-│  Subdomains → webs.txt (live servers)           │
-│  Live webs → URLs, JS files, screenshots        │
-└──────┬──────────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────────────────┐
-│           HOST MODULE                            │
-│  IPs → port scans, CDN detection                │
-└──────┬──────────────────────────────────────────┘
-       │
-       ▼
-┌─────────────────────────────────────────────────┐
-│           VULN MODULE                            │
-│  URLs → nuclei, XSS, SQLi, etc.                 │
-└──────┬──────────────────────────────────────────┘
-       │
-       ▼
-┌─────────────┐
-│   OUTPUT    │
-│ Recon/domain│
-└─────────────┘
+```mermaid
+flowchart TD
+    I[Input: -d or -l] --> O[OSINT Module]
+    O --> S[Subdomain Module]
+    S --> W[Web Module]
+    W --> H[Host Module]
+    H --> V[Vuln Module]
+    V --> R[Output: Recon/domain]
+
+    O -.-> O1[emails, dorks, GitHub leaks]
+    S -.-> S1[subdomains.txt merged and deduped]
+    W -.-> W1[webs.txt, URLs, JS files, screenshots]
+    H -.-> H1[port scans and CDN detection]
+    V -.-> V1[nuclei, XSS, SQLi, and more]
 ```
 
 ---

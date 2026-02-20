@@ -15,13 +15,18 @@ Axiom is an infrastructure automation framework that allows you to:
 - **Scale horizontally** for large-scale reconnaissance
 - **Reduce scan time** from hours to minutes
 
-<!-- IMAGE PLACEHOLDER
-**Image: axiom-architecture.png**
-Description: Diagram showing Axiom architecture with local machine controlling a fleet of cloud instances, distributing tasks, and collecting results.
-- Show: Local machine → Axiom Fleet (multiple cloud instances) → Target
-- Include: Provider logos (DigitalOcean, AWS, Azure, Linode)
-- Arrows showing command distribution and result aggregation
--->
+```mermaid
+flowchart LR
+    L[Local reconFTW Controller] --> A[Axiom Fleet Manager]
+    A --> I1[Cloud Instance 1]
+    A --> I2[Cloud Instance 2]
+    A --> I3[Cloud Instance N]
+    I1 --> T[Target Scope]
+    I2 --> T
+    I3 --> T
+    T --> R[Distributed Results]
+    R --> L
+```
 
 ---
 
@@ -120,47 +125,18 @@ AXIOM_RESOLVERS_PATH="/home/op/lists/resolvers.txt"
 
 ## Distributed Scanning Flow
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    Axiom Distributed Scanning                        │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│  ┌──────────────┐                                                    │
-│  │ Local Machine│                                                    │
-│  │  (reconFTW)  │                                                    │
-│  └──────┬───────┘                                                    │
-│         │                                                            │
-│         │ axiom-fleet launch                                         │
-│         ▼                                                            │
-│  ┌──────────────────────────────────────────────────────┐           │
-│  │              Axiom Fleet (10 instances)              │           │
-│  ├──────────────────────────────────────────────────────┤           │
-│  │  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌────┐            │           │
-│  │  │ 01 │  │ 02 │  │ 03 │  │ 04 │  │ 05 │            │           │
-│  │  └────┘  └────┘  └────┘  └────┘  └────┘            │           │
-│  │  ┌────┐  ┌────┐  ┌────┐  ┌────┐  ┌────┐            │           │
-│  │  │ 06 │  │ 07 │  │ 08 │  │ 09 │  │ 10 │            │           │
-│  │  └────┘  └────┘  └────┘  └────┘  └────┘            │           │
-│  └──────────────────────────────────────────────────────┘           │
-│         │                                                            │
-│         │ axiom-scan (distribute tasks)                              │
-│         ▼                                                            │
-│  ┌──────────────────────────────────────────────────────┐           │
-│  │ Each instance processes portion of targets:          │           │
-│  │ - Instance 01: subdomains 1-1000                     │           │
-│  │ - Instance 02: subdomains 1001-2000                  │           │
-│  │ - ...                                                 │           │
-│  └──────────────────────────────────────────────────────┘           │
-│         │                                                            │
-│         │ Results merged                                             │
-│         ▼                                                            │
-│  ┌──────────────┐                                                    │
-│  │ Local Machine│                                                    │
-│  │ (combined    │                                                    │
-│  │  results)    │                                                    │
-│  └──────────────┘                                                    │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    L[Local Machine: reconFTW] --> FL[axiom-fleet launch]
+    FL --> F[Axiom Fleet: multiple instances]
+    F --> D[axiom-scan task distribution]
+    D --> I1[Instance 01: targets 1..N]
+    D --> I2[Instance 02: targets N+1..M]
+    D --> IN[Instance N: target subset]
+    I1 --> M[Merge results]
+    I2 --> M
+    IN --> M
+    M --> R[Local Machine: combined results]
 ```
 
 ---

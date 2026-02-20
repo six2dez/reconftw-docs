@@ -49,6 +49,33 @@ OSINT is executed before any other module for strategic reasons:
 | `cloud_enum_scan` | Cloud storage enumeration | cloud_enum |
 | `ip_info` | IP intelligence (for IP targets) | WhoisXML API |
 
+## Module Flow
+
+```mermaid
+flowchart TD
+    T[Target Domain or IP] --> G[google_dorks]
+    T --> GD[github_dorks]
+    T --> GR[github_repos and github_leaks]
+    T --> M[metadata]
+    T --> A[apileaks]
+    T --> E[emails]
+    T --> D[domain_info]
+    T --> C[cloud_enum_scan]
+    T --> S[spoof and mail_hygiene]
+    T --> I[ip_info]
+
+    G --> O[OSINT Outputs]
+    GD --> O
+    GR --> O
+    M --> O
+    A --> O
+    E --> O
+    D --> O
+    C --> O
+    S --> O
+    I --> O
+```
+
 ---
 
 ## Configuration Options

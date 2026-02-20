@@ -73,6 +73,22 @@ INTERACTSH_TOKEN=""  # Optional, for private server
 | `spraying` | Password Spraying | brutespray, brutus |
 | `brokenLinks` | Broken Link Hijacking | second-order, katana (legacy) |
 
+## Module Flow
+
+```mermaid
+flowchart TD
+    I[Inputs: webs, URLs, params, host services] --> N[nuclei_check and nuclei_dast]
+    I --> X[xss and sqli]
+    I --> S[ssrf_checks and lfi and ssti and command_injection]
+    I --> M[smuggling and webcache and 4xxbypass]
+    I --> P[spraying and brokenLinks and fuzzparams and test_ssl]
+    N --> O[vulnerability outputs]
+    X --> O
+    S --> O
+    M --> O
+    P --> O
+```
+
 ---
 
 ## Configuration Options
