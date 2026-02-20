@@ -319,7 +319,7 @@ When you run `./reconftw.sh -d target.com -r`, the following phases execute:
 ### 4. Host Analysis
 
 ```
-[hosts] → portscan → cdnprovider → waf_checks → favicon → geo_info
+[hosts] → portscan → service_fingerprint → cdnprovider → waf_checks → geo_info
 ```
 
 ### 5. Web Analysis
@@ -331,7 +331,7 @@ When you run `./reconftw.sh -d target.com -r`, the following phases execute:
 ### 6. Vulnerability Phase (if `-a` flag)
 
 ```
-[vulns] → nuclei → xss → sqli → ssrf → cors → lfi → ssti → ...
+[vulns] → nuclei → xss → sqli → ssrf → lfi → ssti → ...
 ```
 
 ### 7. Finalization (`end()`)
@@ -627,7 +627,7 @@ Key variables used throughout reconFTW:
 │  │                        VULNERABILITY SCANNING                     │       │
 │  │  ─────────────────────────────────────────────────────────────   │       │
 │  │  nuclei (CVEs)  │  dalfox (XSS)  │  sqlmap (SQLi)  │  TInjA      │       │
-│  │  cors           │  ssrf          │  lfi            │  toxicache  │       │
+│  │  ssrf           │  lfi           │  smugglex       │  toxicache  │       │
 │  └──────────────────────────────────────────────────────────────────┘       │
 │         │                                                                    │
 │         ▼                                                                    │

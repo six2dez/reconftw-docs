@@ -546,7 +546,7 @@ PARALLEL_PROGRESS_COMPACT_ACTIVE_MAX=4
 | Sub post-active | `sub_tls`, `sub_analytics` | `PAR_SUB_POST_ACTIVE_GROUP_SIZE` |
 | Sub brute/permut | brute + permutations | `PAR_SUB_BRUTE_GROUP_SIZE` |
 | OSINT group 1 | domain/ip/emails/dorks/3rd parties | `PAR_OSINT_GROUP1_SIZE` |
-| OSINT group 2 | repos/metadata/apileaks/zone/favicon | `PAR_OSINT_GROUP2_SIZE` |
+| OSINT group 2 | repos/leaks/actions/metadata/apileaks/zone | `PAR_OSINT_GROUP2_SIZE` |
 | Web detect group | screenshot/cdn/portscan | `PAR_WEB_DETECT_GROUP_SIZE` |
 | Vulns group 1..4 | vuln stages | `PAR_VULNS_GROUP1_SIZE` ... `PAR_VULNS_GROUP4_SIZE` |
 

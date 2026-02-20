@@ -121,10 +121,10 @@ reconFTW offers several scan modes optimized for different use cases.
 **What it does:**
 | Phase | Functions |
 |-------|-----------|
-| OSINT | domain_info, emails, dorks, metadata |
+| OSINT | domain_info, emails, dorks, metadata, github leaks |
 | Subdomains | passive, bruteforce, permutations, scraping |
 | Hosts | portscan, CDN detection, WAF detection |
-| Web | probing, screenshots, URL extraction, JS analysis |
+| Web | probing, screenshots, URL extraction, JS analysis, LLM probe (optional) |
 | Light Vulns | nuclei (info/low), subdomain takeover |
 
 **Duration:** 1-4 hours depending on target size
@@ -202,10 +202,9 @@ Everything in `-r` mode PLUS:
 - SQL injection testing
 - SSRF checks
 - LFI/SSTI testing
-- CORS misconfiguration
-- Open redirect testing
 - Command injection
-- Prototype pollution
+- 4XX bypass checks
+- Credential spraying (`brutespray` or `brutus`, by config)
 - HTTP smuggling
 - And more...
 
@@ -303,6 +302,8 @@ EOF
 - `google_dorks`
 - `github_dorks`
 - `github_repos`
+- `github_leaks`
+- `github_actions_audit`
 - `metadata`
 - `apileaks`
 - `emails`
@@ -351,19 +352,17 @@ EOF
 - `grpc_reflection`
 - `param_discovery`
 - `websocket_checks`
+- `llm_probe`
 
 **Vulnerability Functions:**
 - `nuclei_check`
 - `xss`
-- `cors`
-- `open_redirect`
 - `ssrf_checks`
 - `crlf_checks`
 - `lfi`
 - `ssti`
 - `sqli`
 - `command_injection`
-- `prototype_pollution`
 - `smuggling`
 - `webcache`
 - `4xxbypass`
@@ -374,9 +373,9 @@ EOF
 
 **Host Functions:**
 - `portscan`
+- `service_fingerprint`
 - `cdnprovider`
 - `waf_checks`
-- `favicon`
 - `geo_info`
 
 </details>

@@ -47,6 +47,7 @@ Before scanning for vulnerabilities, you need to understand what you're scanning
 | `grpc_reflection` | gRPC reflection probing | grpcurl |
 | `param_discovery` | Parameter discovery | arjun |
 | `websocket_checks` | WebSocket auditing | custom |
+| `llm_probe` | LLM service probing | julius |
 
 ---
 
@@ -108,6 +109,8 @@ GRAPHQL_CHECK=true
 GQLSPECTION=false
 PARAM_DISCOVERY=true
 GRPC_SCAN=false                # gRPC reflection probing
+LLM_PROBE=false                # LLM endpoint probing
+LLM_PROBE_AUGUSTUS=false       # Include augustus generator config
 ```
 
 ---
@@ -815,6 +818,30 @@ GRPC_SCAN=false    # Disabled by default (requires grpcurl)
 
 ---
 
+### `llm_probe` - LLM Service Probing
+
+Probes discovered web/API endpoints to identify exposed LLM services and providers.
+
+**How It Works:**
+
+```
+webs/webs_all.txt → julius probe → provider/model/service fingerprints
+```
+
+**Output:**
+```
+webs/llm_probe.jsonl
+webs/llm_probe.txt
+```
+
+**Configuration:**
+```bash
+LLM_PROBE=false
+LLM_PROBE_AUGUSTUS=false
+```
+
+---
+
 ## Output Summary
 
 | File | Content |
@@ -827,6 +854,8 @@ GRPC_SCAN=false    # Disabled by default (requires grpcurl)
 | `js/js_secrets.txt` | JavaScript secrets |
 | `fuzzing/` | Directory fuzzing results |
 | `webs/cms_scanner.txt` | CMS detection results |
+| `webs/llm_probe.jsonl` | LLM service probe findings (raw) |
+| `webs/llm_probe.txt` | LLM service probe findings (summary) |
 
 ---
 

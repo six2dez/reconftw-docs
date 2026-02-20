@@ -43,7 +43,7 @@
 │                        reconFTW Capabilities                     │
 ├─────────────────────────────────────────────────────────────────┤
 │  OSINT           │ Google dorks, GitHub secrets, metadata,      │
-│                  │ email harvesting, API leaks, cloud enum,     │
+│                  │ email harvesting, API leaks, cloud enum,      │
 │                  │ leaked credentials, S3 buckets               │
 ├──────────────────┼──────────────────────────────────────────────┤
 │  Subdomains      │ 10+ passive sources, DNS bruteforce,         │
@@ -51,16 +51,16 @@
 │                  │ CT logs, scraping, zone transfer, takeover   │
 ├──────────────────┼──────────────────────────────────────────────┤
 │  Web Analysis    │ HTTP probing, screenshots, JS secrets,       │
-│                  │ URL extraction, directory fuzzing, CMS,      │
-│                  │ virtual hosts, parameters, GraphQL, gRPC     │
+│                  │ URL extraction, directory fuzzing, CMS,       │
+│                  │ virtual hosts, parameters, GraphQL, gRPC, LLM │
 ├──────────────────┼──────────────────────────────────────────────┤
-│  Vulnerabilities │ Nuclei templates, XSS, SQLi, SSRF, LFI,     │
-│                  │ SSTI (TInjA), CORS, CRLF, command injection, │
-│                  │ prototype pollution, 403 bypass, smuggling,  │
-│                  │ web cache poisoning, broken links/takeover   │
+│  Vulnerabilities │ Nuclei templates, XSS, SQLi, SSRF, LFI,      │
+│                  │ SSTI (TInjA), CRLF, command injection,        │
+│                  │ 403 bypass, smuggling, web cache poisoning,   │
+│                  │ broken links/takeover, credential spraying    │
 ├──────────────────┼──────────────────────────────────────────────┤
-│  Host Analysis   │ Port scanning (nmap/naabu), CDN detection,   │
-│                  │ WAF fingerprinting, geolocation, banners     │
+│  Host Analysis   │ Port scanning (nmap/naabu), service           │
+│                  │ fingerprinting, CDN detection, WAF, geolocation │
 ├──────────────────┼──────────────────────────────────────────────┤
 │  Automation      │ Checkpoint/resume system, incremental scans, │
 │                  │ notifications (Slack/Discord/Telegram),      │

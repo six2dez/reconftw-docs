@@ -70,7 +70,7 @@ INTERACTSH_TOKEN=""  # Optional, for private server
 | `4xxbypass` | 403/401 Bypass | nomore403 |
 | `fuzzparams` | Parameter Fuzzing | nuclei |
 | `test_ssl` | SSL/TLS Issues | testssl |
-| `spraying` | Password Spraying | brutespray |
+| `spraying` | Password Spraying | brutespray, brutus |
 | `brokenLinks` | Broken Link Hijacking | second-order, katana (legacy) |
 
 ---
@@ -90,9 +90,9 @@ SSRF_CHECKS=true
 CRLF_CHECKS=true
 LFI=true
 SSTI=true
-SSTI_ENGINE="tinja"  # tinja|legacy
-TINJA_RATELIMIT=0
-TINJA_TIMEOUT=15
+SSTI_ENGINE="TInjA"  # TInjA
+TInjA_RATELIMIT=0
+TInjA_TIMEOUT=15
 SQLI=true
 SQLMAP=true
 GHAURI=false
@@ -299,9 +299,9 @@ vulns/ssti.txt
 **Configuration:**
 ```bash
 SSTI=true
-SSTI_ENGINE="tinja"   # tinja|legacy
-TINJA_RATELIMIT=0
-TINJA_TIMEOUT=15
+SSTI_ENGINE="TInjA"
+TInjA_RATELIMIT=0
+TInjA_TIMEOUT=15
 ssti_wordlist=${WORDLISTS_DIR}/ssti_wordlist.txt
 ```
 
@@ -602,19 +602,30 @@ Attempts common passwords against discovered services.
 
 **How It Works:**
 
+`SPRAY_ENGINE=brutespray`:
 ```
-hosts/portscan_active.xml → brutespray →
-→ Test common creds → Report successful logins
+hosts/portscan_active.gnmap → brutespray → credential attempts
+```
+
+`SPRAY_ENGINE=brutus`:
+```
+hosts/fingerprintx.jsonl (or naabu_open→fingerprintx fallback) → brutus → successful credentials JSONL
 ```
 
 **Output:**
 ```
-vulns/brutespray.txt
+vulns/brutespray/         # When using brutespray engine
+vulns/brutus.jsonl        # When using brutus engine
 ```
 
 **Configuration:**
 ```bash
 SPRAY=true
+SPRAY_ENGINE="brutespray"   # brutespray|brutus
+SPRAY_BRUTUS_ONLY_DEEP=true
+BRUTUS_USERNAMES=""
+BRUTUS_PASSWORDS=""
+BRUTUS_KEY_FILE=""
 BRUTESPRAY_THREADS=20
 BRUTESPRAY_CONCURRENCE=10
 ```

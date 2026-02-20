@@ -54,7 +54,7 @@ Passive sources → Merge → Resolve → Filter wildcards → Active enum
 
 ### 4. Host Analysis Fourth
 
-**Functions:** `portscan`, `cdnprovider`, `favicon`, `geo_info`
+**Functions:** `portscan`, `service_fingerprint`, `cdnprovider`, `geo_info`
 
 **Why fourth:**
 - Operates on resolved IPs

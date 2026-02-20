@@ -252,6 +252,13 @@ THIRD_PARTIES=true           # Third-party misconfiguration checks
 SPOOF=true                   # Domain spoofing checks
 MAIL_HYGIENE=true            # SPF/DMARC analysis
 CLOUD_ENUM=true              # Cloud storage enumeration
+GITHUB_LEAKS=true            # GitHub-wide secret search with ghleaks
+GHLEAKS_THREADS=5            # Concurrent download threads for ghleaks
+SECRETS_ENGINE="gitleaks"    # gitleaks|titus|noseyparker|hybrid
+SECRETS_SCAN_GIT_HISTORY=false # Include git history scanning when supported
+SECRETS_VALIDATE=false       # Validate secret status when supported
+GITHUB_ACTIONS_AUDIT=false   # Audit GitHub Actions artifacts/workflows (gato)
+GATO_INCLUDE_ALL_ARTIFACT_SECRETS=false # Include noisy artifact secret results
 METAFINDER_LIMIT=20          # Max documents to analyze (max 250)
 ```
 
@@ -397,6 +404,9 @@ PORTSCAN_STRATEGY=legacy     # legacy|naabu_nmap
 NAABU_ENABLE=true
 NAABU_RATE=1000
 NAABU_PORTS="--top-ports 1000"
+SERVICE_FINGERPRINT=true
+SERVICE_FINGERPRINT_ENGINE="fingerprintx"   # fingerprintx
+SERVICE_FINGERPRINT_TIMEOUT_MS=2000
 
 # Optional UDP scan (requires privileges on most systems)
 PORTSCAN_UDP=false
@@ -431,6 +441,8 @@ GRAPHQL_CHECK=true           # GraphQL endpoint detection
 GQLSPECTION=false            # Deep GraphQL introspection
 PARAM_DISCOVERY=true         # Parameter discovery with Arjun
 GRPC_SCAN=false              # gRPC reflection probing
+LLM_PROBE=false              # Probe endpoints for exposed LLM services (julius)
+LLM_PROBE_AUGUSTUS=false     # Include augustus generator config in julius output
 KATANA_HEADLESS_PROFILE=off  # off|smart|full
 KATANA_HEADLESS_SMART_LIMIT=15
 
@@ -450,9 +462,9 @@ SSRF_CHECKS=true             # SSRF testing
 CRLF_CHECKS=true             # CRLF injection
 LFI=true                     # Local file inclusion
 SSTI=true                    # Server-side template injection
-SSTI_ENGINE="tinja"          # tinja|legacy
-TINJA_RATELIMIT=0
-TINJA_TIMEOUT=15
+SSTI_ENGINE="TInjA"          # TInjA
+TInjA_RATELIMIT=0
+TInjA_TIMEOUT=15
 SQLI=true                    # SQL injection
 SQLMAP=true                  # SQLMap testing
 GHAURI=false                 # Ghauri SQLi testing
@@ -463,6 +475,11 @@ SECOND_ORDER_DEPTH=1
 SECOND_ORDER_THREADS=10
 SECOND_ORDER_INSECURE=false
 SPRAY=true                   # Password spraying
+SPRAY_ENGINE="brutespray"    # brutespray|brutus
+SPRAY_BRUTUS_ONLY_DEEP=true
+BRUTUS_USERNAMES=""
+BRUTUS_PASSWORDS=""
+BRUTUS_KEY_FILE=""
 COMM_INJ=true                # Command injection
 SMUGGLING=true               # HTTP request smuggling
 WEBCACHE=true                # Web cache issues

@@ -9,10 +9,10 @@ The host analysis module examines the infrastructure behind discovered assets, i
 | Function | Purpose | Tools |
 |----------|---------|-------|
 | `portscan` | Port discovery (passive + active) | naabu (optional), nmap, smap |
+| `service_fingerprint` | Service fingerprinting on open ports | fingerprintx |
 | `cdnprovider` | CDN detection and filtering | cdncheck, hakoriginfinder (optional) |
 | `waf_checks` | WAF detection | wafw00f |
 | `geo_info` | IP geolocation | ipinfo |
-| `banner_grabber` | Service banner extraction | nmap |
 
 > `favirecon_tech` (favicon technology fingerprinting) is executed in the Web Analysis module and writes to `webs/favirecon.[json|txt]`.
 
@@ -39,6 +39,9 @@ PORTSCAN_STRATEGY=legacy     # legacy|naabu_nmap
 NAABU_ENABLE=true
 NAABU_RATE=1000
 NAABU_PORTS="--top-ports 1000"
+SERVICE_FINGERPRINT=true
+SERVICE_FINGERPRINT_ENGINE="fingerprintx"
+SERVICE_FINGERPRINT_TIMEOUT_MS=2000
 
 # Optional UDP scan (requires privileges on most systems)
 PORTSCAN_UDP=false
@@ -177,6 +180,16 @@ When `PORTSCAN_STRATEGY=naabu_nmap`, reconFTW uses a 2-stage flow:
 
 This keeps coverage while reducing total `nmap` time on medium/large targets.
 
+### Service Fingerprinting
+
+When `SERVICE_FINGERPRINT=true`, reconFTW runs fingerprinting against discovered `host:port` pairs and stores normalized service metadata.
+
+**Output:**
+```
+hosts/fingerprintx.jsonl
+hosts/fingerprintx.txt
+```
+
 ### Optional UDP Scan
 
 When `PORTSCAN_UDP=true`, reconFTW runs an additional UDP scan (separate output `hosts/portscan_active_udp.xml`). UDP scanning usually requires elevated privileges depending on OS/config.
@@ -261,7 +274,7 @@ webs.txt → wafw00f →
 
 **Output:**
 ```
-hosts/waf.txt
+webs/webs_wafs.txt
 ```
 
 **Sample Output:**
@@ -436,7 +449,7 @@ IPV6_SCAN=true
 │ └──┬───┘  └───┬────┘   └────┬────┘   └────┬────┘                   │
 │    │          │             │             │                         │
 │    ▼          ▼             ▼             ▼                         │
-│ portscan_  portscan_     waf.txt      geo.txt                       │
+│ portscan_  portscan_  webs_wafs.txt   geo.txt                       │
 │ active.txt passive.txt                                               │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -459,7 +472,9 @@ IPV6_SCAN=true
 | `hosts/portscan_active.gnmap` | Nmap greppable output |
 | `hosts/portscan_active_targeted.xml` | Targeted Nmap XML output (when `PORTSCAN_STRATEGY=naabu_nmap`) |
 | `hosts/portscan_active_udp.xml` | UDP Nmap XML output (when `PORTSCAN_UDP=true`) |
-| `hosts/waf.txt` | WAF detection results |
+| `hosts/fingerprintx.jsonl` | Service fingerprints (raw JSONL) |
+| `hosts/fingerprintx.txt` | Service fingerprints (normalized text) |
+| `webs/webs_wafs.txt` | WAF detection results |
 | `hosts/geo.txt` | Geolocation data |
 | `hosts/grpc_reflection.txt` | gRPC services with reflection |
 

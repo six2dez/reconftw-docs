@@ -98,6 +98,8 @@ Recon/example.com/
 │   ├── webs_all.txt         # All probed URLs with metadata
 │   ├── web_full_info_plain.txt  # Detailed web info (title, status, tech)
 │   ├── url_extract.txt      # Extracted URLs from crawling
+│   ├── llm_probe.jsonl      # LLM probe findings (raw)
+│   ├── llm_probe.txt        # LLM probe findings (summary)
 │   └── takeover.txt         # Subdomain takeover findings
 │
 ├── hosts/                   # Host/IP information
@@ -109,11 +111,15 @@ Recon/example.com/
 │   ├── portscan_active.txt  # Open ports
 │   ├── portscan_active.xml  # Nmap XML output
 │   ├── portscan_active_targeted.xml  # Targeted Nmap XML output (when PORTSCAN_STRATEGY=naabu_nmap)
-│   └── portscan_active_udp.xml       # UDP Nmap XML output (when PORTSCAN_UDP=true)
+│   ├── portscan_active_udp.xml       # UDP Nmap XML output (when PORTSCAN_UDP=true)
+│   ├── fingerprintx.jsonl   # Service fingerprints (raw)
+│   └── fingerprintx.txt     # Service fingerprints (normalized)
 │
 ├── osint/                   # OSINT results
 │   ├── dorks.txt            # Google dork results
 │   ├── github_company_secrets.json  # GitHub leaks
+│   ├── github_actions_audit.json
+│   ├── github_actions_audit.txt
 │   ├── github_dorks.txt
 │   ├── emails.txt           # [KEY] Discovered emails
 │   ├── passwords.txt        # Leaked credentials
@@ -135,6 +141,7 @@ Recon/example.com/
 │   ├── ssrf_requested_headers.txt # SSRF candidates tested (headers)
 │   ├── ssrf_callback.txt     # SSRF callbacks received (OOB)
 │   ├── ssrf_alt_protocols.txt # SSRF alternate protocol findings
+│   ├── brutus.jsonl          # Successful credentials (when SPRAY_ENGINE=brutus)
 │   └── ...                  # Other vuln types
 │
 ├── js/                      # JavaScript analysis

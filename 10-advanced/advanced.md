@@ -27,7 +27,7 @@ Use the `-c` flag to run specific functions:
 | OSINT | `google_dorks`, `github_dorks`, `metadata`, `emails`, `domain_info` |
 | Subdomains | `sub_passive`, `sub_crt`, `sub_brute`, `sub_permut`, `sub_dns` |
 | Web | `webprobe_simple`, `screenshot`, `fuzz`, `urlchecks`, `jschecks` |
-| Vulns | `nuclei_check`, `xss`, `sqli`, `ssrf_checks`, `cors` |
+| Vulns | `nuclei_check`, `xss`, `sqli`, `ssrf_checks`, `fuzzparams` |
 | Hosts | `portscan`, `cdnprovider`, `waf_checks`, `geo_info` |
 
 ### Function Dependencies

@@ -428,7 +428,17 @@ Host: 93.184.216.34 () Ports: 22/open/tcp//ssh//OpenSSH 8.2p1/, 80/open/tcp//htt
 
 ---
 
-### waf.txt
+### fingerprintx.jsonl / fingerprintx.txt
+
+**Content:** Service fingerprints for discovered `host:port` pairs.
+
+**Files:**
+- `hosts/fingerprintx.jsonl` (raw JSONL from fingerprintx)
+- `hosts/fingerprintx.txt` (normalized summary)
+
+---
+
+### webs_wafs.txt
 
 **Content:** WAF detection results.
 
@@ -546,6 +556,16 @@ File: presentation.pptx
   }
 ]
 ```
+
+---
+
+### github_actions_audit.json / github_actions_audit.txt
+
+**Content:** GitHub Actions artifact/workflow audit findings (when `GITHUB_ACTIONS_AUDIT=true`).
+
+**Files:**
+- `osint/github_actions_audit.json` (raw JSON)
+- `osint/github_actions_audit.txt` (text summary)
 
 ---
 
@@ -735,6 +755,15 @@ Email Spoofing: PROTECTED (moderate)
 
 ---
 
+### brutus.jsonl
+
+**Content:** Successful credential findings when `SPRAY_ENGINE=brutus`.
+
+**File:**
+- `vulns/brutus.jsonl`
+
+---
+
 ### testssl.txt
 
 **Content:** SSL/TLS analysis results.
@@ -807,6 +836,16 @@ https://cdn.example.com/lib/jquery-3.6.0.min.js
 /graphql
 /api/auth/token
 ```
+
+---
+
+### llm_probe.jsonl / llm_probe.txt
+
+**Content:** LLM endpoint probe findings from `julius` (when `LLM_PROBE=true`).
+
+**Files:**
+- `webs/llm_probe.jsonl`
+- `webs/llm_probe.txt`
 
 ---
 

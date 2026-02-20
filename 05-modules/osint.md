@@ -36,7 +36,9 @@ OSINT is executed before any other module for strategic reasons:
 |----------|---------|------------|
 | `google_dorks` | Find exposed files/pages via Google | dorks_hunter |
 | `github_dorks` | Search GitHub for leaked secrets | gitdorks_go |
-| `github_repos` | Analyze organization repositories | enumerepo, gitleaks, trufflehog |
+| `github_repos` | Analyze organization repositories | enumerepo, gitleaks/titus/noseyparker, trufflehog |
+| `github_leaks` | GitHub-wide secret search | ghleaks |
+| `github_actions_audit` | GitHub Actions artifact/workflow audit | gato |
 | `metadata` | Extract document metadata | metagoofil, exiftool |
 | `apileaks` | Detect exposed APIs | porch-pirate, SwaggerSpy, postleaksNg |
 | `emails` | Harvest email addresses | EmailHarvester, LeakSearch |
@@ -70,6 +72,13 @@ THIRD_PARTIES=true
 SPOOF=true
 MAIL_HYGIENE=true
 CLOUD_ENUM=true
+GITHUB_LEAKS=true
+GHLEAKS_THREADS=5
+SECRETS_ENGINE="gitleaks"      # gitleaks|titus|noseyparker|hybrid
+SECRETS_SCAN_GIT_HISTORY=false
+SECRETS_VALIDATE=false
+GITHUB_ACTIONS_AUDIT=false
+GATO_INCLUDE_ALL_ARTIFACT_SECRETS=false
 
 # Limits
 METAFINDER_LIMIT=20  # Max documents to fetch (max 250)
@@ -158,13 +167,13 @@ https://github.com/org/project/blob/master/.env - DATABASE_URL=postgres://user:p
 
 ### GitHub Repos (`github_repos`)
 
-Analyzes organization repositories for leaked secrets using multiple detection tools.
+Analyzes organization repositories for leaked secrets using selectable detection engines.
 
 **How It Works:**
 
 ```
-Target domain → Extract org name → enumerepo (find repos) → Clone repos → 
-→ gitleaks (scan) → trufflehog (scan) → Combine results
+Target domain → Extract org name → enumerepo (find repos) → Clone repos →
+→ secrets engine (gitleaks/titus/noseyparker/hybrid) → trufflehog (scan) → Combine results
 ```
 
 **Output:**
@@ -188,6 +197,9 @@ osint/github_company_secrets.json
 ```bash
 GITHUB_DORKS=true
 GITHUB_REPOS=true
+SECRETS_ENGINE="gitleaks"      # gitleaks|titus|noseyparker|hybrid
+SECRETS_SCAN_GIT_HISTORY=false
+SECRETS_VALIDATE=false
 
 # Token file path
 GITHUB_TOKENS=${tools}/.github_tokens
@@ -207,6 +219,81 @@ chmod 600 ~/Tools/.github_tokens
 ```
 
 > **Tip:** Multiple tokens help avoid rate limiting. Create tokens with `read:org` and `repo` scopes.
+
+### GitHub Actions Audit (`github_actions_audit`)
+
+Audits GitHub Actions workflows/artifacts for pipeline exposure and leaked secrets.
+
+**How It Works:**
+
+```
+Target domain → org extraction → gato enum workflows/artifacts → JSON findings
+```
+
+**Output:**
+```
+osint/github_actions_audit.json
+osint/github_actions_audit.txt
+```
+
+**Configuration:**
+```bash
+GITHUB_ACTIONS_AUDIT=false
+GATO_INCLUDE_ALL_ARTIFACT_SECRETS=false
+```
+
+---
+
+## GitHub-wide Secret Search
+
+### What It Does
+
+Searches **all of GitHub** (not just organization repos) for leaked secrets, tokens, and credentials related to the target domain. Unlike `github_repos` which clones and scans specific organization repositories locally, `github_leaks` uses GitHub's Code Search API to find matches across all public repositories and gists.
+
+### How It Works
+
+```
+Target domain → ghleaks → GitHub Code Search API → Download matches →
+→ gitleaks detection engine (100+ rules, entropy, keyword analysis) → Report
+```
+
+ghleaks combines GitHub's Code Search with gitleaks' detection pipeline:
+1. **Search**: Queries GitHub's Code Search API for files containing the target keyword
+2. **Download**: Fetches raw file content for each match
+3. **Detect**: Runs every file through gitleaks' full detection pipeline (100+ rules, entropy checks, recursive decoding)
+4. **Report**: Outputs enriched findings with direct GitHub URLs
+
+In **DEEP mode**, ghleaks enables `--exhaustive` splitting which overcomes GitHub's 1,000-result API cap by splitting queries by language, extension, and size.
+
+**Requires:** GitHub tokens in `$GITHUB_TOKENS` file
+
+### Output
+
+```
+osint/github_leaks.json
+```
+
+**Sample Output:**
+```json
+{
+  "RuleID": "generic-api-key",
+  "Match": "AKIA1234567890ABCDEF",
+  "File": "config.yml",
+  "URL": "https://github.com/someuser/somerepo/blob/main/config.yml"
+}
+```
+
+### Configuration
+
+```bash
+GITHUB_LEAKS=true
+GHLEAKS_THREADS=5     # Concurrent download threads
+
+# Uses the same token file as other GitHub tools
+GITHUB_TOKENS=${tools}/.github_tokens
+```
+
+> **Note:** GitHub's Code Search API has a rate limit of 10 requests/minute. ghleaks handles this automatically with adaptive waiting. File downloads use the general 5,000 requests/hour limit controlled via `GHLEAKS_THREADS`.
 
 ---
 
@@ -629,6 +716,7 @@ This executes all enabled OSINT functions without subdomain enumeration or vulne
 | google_dorks | `osint/dorks.txt` |
 | github_dorks | `osint/gitdorks.txt` |
 | github_repos | `osint/github_company_secrets.json` |
+| github_leaks | `osint/github_leaks.json` |
 | metadata | `osint/metadata_results.txt` |
 | apileaks | `osint/postman_leaks*.txt`, `osint/swagger_leaks*.txt` |
 | emails | `osint/emails.txt`, `osint/passwords.txt` |

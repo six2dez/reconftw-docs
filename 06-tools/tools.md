@@ -21,7 +21,11 @@ This page documents the tools currently integrated in reconFTW.
 | `gitdorks_go` | GitHub dorking/secrets |
 | `enumerepo` | Repository enumeration |
 | `gitleaks` | Secret scanning in code |
+| `titus` | Secret scanning engine (repo/files/git history) |
+| `noseyparker` | High-performance secret detection and reporting |
 | `trufflehog` | Secret scanning in files/repos |
+| `ghleaks` | GitHub-wide secret search (Code Search API + gitleaks engine) |
+| `gato` | GitHub Actions artifact/workflow security audit |
 | `metagoofil` | Public document collection |
 | `exiftool` | Metadata extraction |
 | `porch-pirate` | Postman public search |
@@ -90,6 +94,7 @@ This page documents the tools currently integrated in reconFTW.
 | `gqlspection` | GraphQL analysis |
 | `arjun` | Parameter discovery |
 | `grpcurl` | gRPC reflection probing |
+| `julius` | LLM endpoint/service probing |
 | `wget` | Auxiliary content retrieval |
 
 ---
@@ -101,6 +106,7 @@ This page documents the tools currently integrated in reconFTW.
 | `smap` | Passive port intelligence |
 | `naabu` | Fast TCP port discovery (pre-discovery stage) |
 | `nmap` | Active port scanning |
+| `fingerprintx` | Service fingerprinting for discovered host:port pairs |
 | `nmapurls` | URL extraction from Nmap XML |
 | `cdncheck` | CDN provider detection |
 | `hakoriginfinder` | Origin IP discovery for CDN-fronted hosts (best-effort) |
@@ -118,11 +124,12 @@ This page documents the tools currently integrated in reconFTW.
 | `interactsh-client` | OOB callbacks for blind vulns |
 | `crlfuzz` | CRLF injection checks |
 | `interlace` | Parallelized target execution |
-| `tinja` | SSTI detection (default engine) |
+| `TInjA` | SSTI detection (default engine) |
 | `sqlmap` | SQL injection testing |
 | `ghauri` | SQL injection testing (alternative) |
 | `testssl.sh` | TLS/SSL checks |
 | `brutespray` | Password spraying |
+| `brutus` | Multi-protocol credential testing/spraying |
 | `commix` | Command injection checks |
 | `nomore403` | 403/401 bypass checks |
 | `smugglex` | HTTP request smuggling checks |

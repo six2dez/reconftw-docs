@@ -50,11 +50,11 @@ reconFTW is organized into specialized modules, each handling a specific phase o
 
 | Module | Functions | Primary Tools | Output Directory |
 |--------|-----------|---------------|------------------|
-| [OSINT](osint.md) | 12 | dorks_hunter, gitdorks_go, postleaksNg, trufflehog | `osint/` |
+| [OSINT](osint.md) | 13 | dorks_hunter, ghleaks, postleaksNg, trufflehog, gato | `osint/` |
 | [Subdomains](subdomains.md) | 17 | subfinder, puredns, dnsx, dnstake, hakip2host | `subdomains/` |
-| [Hosts](hosts.md) | 6 | nmap, smap, cdncheck, wafw00f | `hosts/` |
-| [Web Analysis](web-analysis.md) | 18 | httpx, favirecon, katana, ffuf | `webs/`, `fuzzing/`, `js/` |
-| [Vulnerabilities](vulnerabilities.md) | 18 | nuclei, dalfox, sqlmap, TInjA, second-order, toxicache | `vulns/` |
+| [Hosts](hosts.md) | 6 | nmap, naabu, fingerprintx, smap, cdncheck | `hosts/` |
+| [Web Analysis](web-analysis.md) | 19 | httpx, favirecon, katana, ffuf, julius | `webs/`, `fuzzing/`, `js/` |
+| [Vulnerabilities](vulnerabilities.md) | 18 | nuclei, dalfox, sqlmap, TInjA, second-order, toxicache, brutus/brutespray | `vulns/` |
 
 ---
 
@@ -100,10 +100,10 @@ reconFTW is organized into specialized modules, each handling a specific phase o
 
 **Key Capabilities:**
 - Port scanning (passive + active)
+- Service fingerprinting on discovered ports
 - CDN detection and filtering
 - WAF identification
 - IP geolocation
-- Favicon-based IP discovery
 
 **When to use:** After subdomain enumeration, to understand infrastructure.
 
